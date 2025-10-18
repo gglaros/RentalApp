@@ -1,5 +1,5 @@
 # app/models/property.py
-from sqlalchemy import String, Integer, ForeignKey, DateTime
+from sqlalchemy import String, Integer, ForeignKey, DateTime, Index, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from app.db.base import Base
@@ -10,6 +10,7 @@ class Property(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     address: Mapped[str] = mapped_column(String(200), nullable=False)
+    unit_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
     price: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[str] = mapped_column(String(200), nullable=False)
     square_feet: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -27,5 +28,12 @@ class Property(Base):
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
 
-    # μονόδρομη σχέση -> μπορούμε να έχουμε πρόσβαση σε User αν χρειαστεί
+    
     owner = relationship("User")
+
+
+    __table_args__ = (
+        UniqueConstraint("owner_id", "address", "unit_number", name="uq_owner_address_unit"),
+        Index("ix_properties_owner_id", "owner_id"),
+        Index("ix_properties_status", "status"),
+    )

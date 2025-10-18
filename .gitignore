@@ -8,6 +8,7 @@ __pycache__/
 venv/
 env/
 ENV/
+rentalenv
 
 # ---- Environment variables ----
 .env
@@ -31,3 +32,9 @@ Thumbs.db
 # ---- Build / dist folders ----
 build/
 dist/
+
+alembic.ini
+
+tools/
+
+

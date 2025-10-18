@@ -15,3 +15,12 @@ class UserOutSchema(Schema):
     first_name = fields.String(allow_none=True)
     last_name = fields.String(allow_none=True)
     phone = fields.String(allow_none=True)
+
+
+
+class UserUpdateSchema(Schema):
+    first_name = fields.String(load_default=None)
+    last_name  = fields.String(load_default=None)
+    phone      = fields.String(load_default=None)
+    role       = fields.String(validate=validate.OneOf(["OWNER","TENANT","ADMIN"]), load_default=None)
+    is_active  = fields.Boolean(load_default=None)
