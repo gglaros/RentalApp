@@ -23,19 +23,15 @@ def get_user(user_id: int):
     session = get_session()
     svc = UsersService(session)
     user = svc.get(user_id)
-    if not user:
-        return jsonify({"error": "Not found"}), 404
     return jsonify(UserOutSchema().dump(user))
+
+
 
 @bp.get("/")
 def list_users():
-    session = get_session()
-    svc = UsersService(session)
+    svc = UsersService(get_session())
     users = svc.list()
     return jsonify(UserOutSchema(many=True).dump(users))
-
-
-
 
 
 @bp.put("/<int:user_id>")
@@ -48,15 +44,8 @@ def update_user(payload, user_id: int):
 
 
 
-
-
 @bp.delete("/<int:user_id>")
 def delete_user(user_id: int):
-    session = get_session()
-    svc = UsersService(session)
-    try:
-        svc.delete(user_id)
-        return jsonify({"message": f"User {user_id} deleted"}), 200
-    except ValueError as e:
-        session.rollback()
-        return jsonify({"error": str(e)}), 404
+    with session_scope():
+        result = UsersService(get_session()).force_delete_owner(user_id)
+        return jsonify(result), 202
