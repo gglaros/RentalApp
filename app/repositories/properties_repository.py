@@ -9,36 +9,39 @@ class PropertiesRepository:
         self.session = session
 
     def create(self, prop):
-        self.session.add(prop)
         try:
-            self.session.flush()  # να σκάσει εδώ το unique/FK πριν το commit
+            self.session.add(prop)
+            self.session.flush()  
         except IntegrityError as e:
-            print(f"IntegrityError in PropertiesRepository.create: {repr(e)}")
             raise translate_integrity_error(e)
-           
-
+        self.session.commit()   
         return prop
 
+    
+    
+    
     def get(self, prop_id: int) -> Property | None:
         return self.session.get(Property, prop_id)
     
     
     
     def find_by_address_and_unit(self, address: str, unit_number: str) -> Property | None:
-     stmt = select(Property).where(
-        Property.address == address,
-        Property.unit_number == unit_number
-    )
+     stmt = select(Property).where( Property.address == address,Property.unit_number == unit_number )
      return self.session.scalar(stmt)
 
 
-    def list(self, owner_id: int | None = None, limit=50, offset=0) -> list[Property]:
-        stmt = select(Property)
-        if owner_id is not None:
-            stmt = stmt.where(Property.owner_id == owner_id)
-        stmt = stmt.order_by(Property.id.desc()).limit(limit).offset(offset)
-        return self.session.scalars(stmt).all()
+    def list_all(self, limit=50, offset=0) -> list[Property]:
+     stmt = (select(Property).order_by(Property.id.desc()).limit(limit).offset(offset))
+     return self.session.scalars(stmt).all()
+ 
+ 
+
+    def list_by_owner(self, owner_id: int, limit=50, offset=0) -> list[Property]:
+     stmt = (select(Property).where(Property.owner_id == owner_id).order_by(Property.id.desc()).limit(limit).offset(offset))
+     return self.session.scalars(stmt).all()
+
     
+  
     def update(self, prop_id: int, **fields) -> Property | None:
         prop = self.get(prop_id)
         
@@ -48,6 +51,7 @@ class PropertiesRepository:
         return prop
     
     
+   
     def delete(self, prop: Property) -> None:
        self.session.delete(prop)
        self.session.flush()

@@ -44,12 +44,13 @@ def translate_integrity_error(err: IntegrityError) -> Exception:
     constraint = getattr(diag, "constraint_name", None)
     pgcode = getattr(orig, "pgcode", None)
     msg = str(orig) if orig else str(err)
-
+    print("\033[91mTranslating IntegrityError:\033[0m",  msg)
   
     if pgcode == "23505":
         # Property unique: (owner_id, address, unit_number)
         if constraint == "uq_address_unit":
             return ConflictError("Property already exists for this owner (address, unit_number).")
+        
         # Users.email unique (προσαρμόσ’ το στο δικό σου όνομα constraint)
         if constraint in {"users_email_key", "uq_users_email"}:
             return ConflictError("Email already in use.")

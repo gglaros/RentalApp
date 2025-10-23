@@ -44,7 +44,7 @@ class UsersService:
             raise NotFoundError(f"Owner not found")
 
        
-        protected = {"id", "password_hash", "created_at", "updated_at"}
+        protected = {"id", "role","password_hash", "created_at", "updated_at"}
         for k in list(fields.keys()):
          if k in protected or fields[k] is None:
             fields.pop(k, None)
@@ -56,22 +56,15 @@ class UsersService:
 
     
    
-    def force_delete_owner(self, owner_id: int) -> dict:
-        user = self.repo.get(owner_id)
-        if not user:
-            raise NotFoundError(f"User {owner_id} not found")
+    def force_delete_user(self, owner_id: int) -> dict:
+     user = self.repo.get(owner_id)
+     if not user:
+        raise NotFoundError(f"User {owner_id} not found")
 
-       
-        if user.role.name != "OWNER":
-            self.repo.delete(user)
-            return {"message": f"User {owner_id} deleted"}
-
-       
-        props_deleted = self.props.delete_by_owner(owner_id)
-
+     if user.role.name != "OWNER":
         self.repo.delete(user)
+        return {"user_deleted": True}
 
-        return {
-            "message": f"Owner {owner_id} deleted",
-            "deleted": {"properties": props_deleted}
-        }
+     props_deleted = self.props.delete_by_owner(owner_id)
+     self.repo.delete(user)
+     return {"user_deleted": True, "properties_deleted": props_deleted}

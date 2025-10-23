@@ -33,8 +33,11 @@ Thumbs.db
 build/
 dist/
 
+backend/rental.db
+
 alembic.ini
 
 tools/
+shapes
 
 

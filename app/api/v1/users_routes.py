@@ -47,5 +47,5 @@ def update_user(payload, user_id: int):
 @bp.delete("/<int:user_id>")
 def delete_user(user_id: int):
     with session_scope():
-        result = UsersService(get_session()).force_delete_owner(user_id)
+        result = UsersService(get_session()).force_delete_user(user_id)
         return jsonify(result), 202
