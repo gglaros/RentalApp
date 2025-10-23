@@ -5,8 +5,8 @@ class UserCreateSchema(Schema):
     password = fields.String(required=True, validate=validate.Length(min=6))
     role = fields.String(required=True, validate=validate.OneOf(["OWNER", "TENANT"]))
     first_name = fields.String(load_default=None)
-    last_name  = fields.String(load_default=None)
-    phone      = fields.String(load_default=None)
+    last_name = fields.String(load_default=None)
+    phone = fields.String(load_default=None,validate=validate.Length(min=10, max=15))
 
 class UserOutSchema(Schema):
     id = fields.Int()
@@ -19,10 +19,10 @@ class UserOutSchema(Schema):
 
 
 class UserUpdateSchema(Schema):
-    email      = fields.Email(load_default=None)
-    first_name = fields.String(load_default=None)
-    last_name  = fields.String(load_default=None)
-    phone      = fields.String(load_default=None)
+    email= fields.Email(load_default=None)
+    first_name= fields.String(load_default=None)
+    last_name = fields.String(load_default=None)
+    phone = fields.String(load_default=None,validate=validate.Length(min=10, max=15))
 
     
 

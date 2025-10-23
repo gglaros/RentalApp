@@ -13,7 +13,7 @@ class PropertiesRepository:
             self.session.add(prop)
             self.session.flush()  
         except IntegrityError as e:
-            raise translate_integrity_error(e)
+           raise translate_integrity_error(e)
         self.session.commit()   
         return prop
 

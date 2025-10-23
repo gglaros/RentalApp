@@ -16,7 +16,6 @@ def register(payload):
         user = svc.register(**payload)
         return jsonify(UserOutSchema().dump(user)), 201
     
-    
 
 @bp.get("/<int:user_id>")
 def get_user(user_id: int):

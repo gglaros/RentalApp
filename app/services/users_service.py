@@ -3,7 +3,7 @@ from app.models.users import User, Role
 from app.repositories.users_repository import UsersRepository
 from app.common.exceptions import  ConflictError, BadRequestError,NotFoundError
 from app.repositories.properties_repository import PropertiesRepository
-
+from app.validation.user_validation import UserValidation
 
 class UsersService:
     def __init__(self, session):
@@ -14,23 +14,22 @@ class UsersService:
 
     def register(self, *, email: str, password: str, role: str, first_name=None, last_name=None, phone=None) -> User:
         
+        UserValidation.check_email(self, email)
+        
         user = User(
             email=email,
             password_hash=generate_password_hash(password),
             role = Role[role.upper()],
             first_name=first_name,
             last_name=last_name,
-            phone=phone,
-        )
-        
+            phone=phone,)
         self.repo.create(user)
-        self.session.commit()
         return user
 
+
     def get(self, user_id: int) -> User | None:
+        UserValidation._check_user(self,user_id)
         user = self.repo.get(user_id)
-        if not user:
-            raise NotFoundError(f"user with id = {user_id} not found")
         return user
 
     def list(self, limit=50, offset=0):
@@ -53,18 +52,15 @@ class UsersService:
         self.session.commit()
         return updated_user
     
-
-    
    
-    def force_delete_user(self, owner_id: int) -> dict:
-     user = self.repo.get(owner_id)
-     if not user:
-        raise NotFoundError(f"User {owner_id} not found")
-
+    def force_delete_user(self, user_id: int) -> dict:
+     UserValidation._check_user(self,user_id)
+     user = self.repo.get(user_id)
+    
      if user.role.name != "OWNER":
         self.repo.delete(user)
         return {"user_deleted": True}
 
-     props_deleted = self.props.delete_by_owner(owner_id)
+     props_deleted = self.props.delete_by_owner(user_id)
      self.repo.delete(user)
      return {"user_deleted": True, "properties_deleted": props_deleted}

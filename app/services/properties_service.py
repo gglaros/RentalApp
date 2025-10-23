@@ -5,12 +5,13 @@ from app.common.exceptions import NotFoundError,BadRequestError,ConflictError
 from app.repositories.properties_repository import PropertiesRepository
 from app.validation.property_validation import PropertyValidation
 from app.models.users import Role
+from app.db.session import get_session
 
 class PropertiesService:
-    def __init__(self, session):
-        self.repo = PropertiesRepository(session)
-        self.users = UsersRepository(session)
-        self.session = session
+    def __init__(self):
+        self.session = get_session() 
+        self.repo = PropertiesRepository(get_session() )
+        self.users = UsersRepository(get_session())
 
     def create(self, **data) -> Property:
         print("\033[91mCreating property with data:\033[0m", self.users.get(data["owner_id"]))
@@ -24,9 +25,8 @@ class PropertiesService:
     
 
     def get(self, prop_id: int):
+        PropertyValidation.check_property_exists(self,prop_id)
         prop = self.repo.get(prop_id)
-        if not prop:
-            raise NotFoundError(f"Property {prop_id} not found")
         return prop
 
 
@@ -36,10 +36,7 @@ class PropertiesService:
     
     
     def list_by_owner(self, owner_id: int) -> list[Property]:
-        
-        owner = self.users.get(owner_id)
-        if not owner:
-            raise NotFoundError(f"Owner {owner_id} not found")
+        PropertyValidation._check_owner(self, {"owner_id": owner_id})
         return self.repo.list_by_owner(owner_id)
 
     
@@ -54,15 +51,14 @@ class PropertiesService:
             fields.pop(k, None)
 
         updated_prop = self.repo.update(prop_id, **fields)
-        
         return updated_prop
 
 
     def delete(self, prop_id: int) -> None:
+        PropertyValidation.check_property_exists(self,prop_id)
+        
         prop = self.repo.get(prop_id)
-        if not prop:
-            raise NotFoundError(f"Property {prop_id} not found")
         self.repo.delete(prop)
-        self.session.commit()
+        return ({"message": "Property deleted"})
         
         

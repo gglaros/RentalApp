@@ -18,7 +18,7 @@ bp = Blueprint("properties",__name__)
 @response_schema(PropertyOutSchema)
 def create_property(payload):
        with session_scope():  
-        svc = PropertiesService(get_session())
+        svc = PropertiesService()
         prop = svc.create(**payload)
         return prop
 
@@ -27,7 +27,7 @@ def create_property(payload):
 @response_schema(PropertyOutSchema)
 def get_property(prop_id: int):
    with session_scope(): 
-    svc = PropertiesService(get_session())
+    svc = PropertiesService()
     prop = svc.get(prop_id)
     return prop
 
@@ -35,18 +35,16 @@ def get_property(prop_id: int):
 
 @bp.get("/")
 def list_all_properties():
-    svc = PropertiesService(get_session())
-    props = svc.list_all()
+    props = PropertiesService.list_all()
     return jsonify(PropertyOutSchema(many=True).dump(props))
 
 
 
-@bp.get("/<int:owner_id>/owner")
+@bp.get("/owner/<int:owner_id>")
 def list_owner_properties(owner_id: int):
-    svc = PropertiesService(get_session())
-    props = svc.list_by_owner(owner_id)
-    return jsonify(PropertyOutSchema(many=True).dump(props)), 200
-
+   with session_scope(): 
+        props = PropertiesService().list_by_owner(owner_id)
+        return jsonify(PropertyOutSchema(many=True).dump(props)), 200
 
 
 
@@ -54,16 +52,14 @@ def list_owner_properties(owner_id: int):
 @use_schema(PropertyUpdateSchema)
 def update_property(payload, prop_id: int):
    with session_scope(): 
-       svc = PropertiesService(get_session())
-       prop = svc.update(prop_id, **payload)
-       return jsonify(PropertyOutSchema().dump(prop)), 200
+        prop = PropertiesService().update(prop_id, **payload)
+        return jsonify(PropertyOutSchema().dump(prop)), 200
 
 
 @bp.delete("/<int:prop_id>")
 def delete_property(prop_id: int):
    with session_scope():
-       svc = PropertiesService(get_session())
-       svc.delete(prop_id)
-       return '', 204
+       result = PropertiesService().delete(prop_id)
+       return jsonify(result)
 
 

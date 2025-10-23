@@ -38,4 +38,4 @@ class PropertyValidation:
     def check_property_exists(self,prop_id:int) -> None:
         prop = self.repo.get(prop_id)
         if not prop:
-            raise NotFoundError(f"Property {prop_id} not found")    
+            raise NotFoundError(f"Property {prop_id} not found in validation")    

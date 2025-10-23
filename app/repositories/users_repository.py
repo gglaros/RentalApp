@@ -1,14 +1,24 @@
 from sqlalchemy import select
 from app.models.users import User
+from sqlalchemy.exc import IntegrityError
+from app.api.errors import translate_integrity_error
 
 class UsersRepository:
     def __init__(self, session):
         self.session = session
 
     def create(self, user: User) -> User:
-        self.session.add(user)
-        self.session.flush()
+        try:
+            self.session.add(user)
+            self.session.flush()  
+        except IntegrityError as e:
+            raise translate_integrity_error(e)
+        self.session.commit()   
         return user
+       
+       
+       
+       
 
     def get(self, user_id: int) -> User | None:
         return self.session.get(User, user_id)
