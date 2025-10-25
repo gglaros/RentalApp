@@ -1,9 +1,9 @@
-from app.models.property import Property
+from app.database.models.property import Property
 from app.repositories.properties_repository import PropertiesRepository
 from app.repositories.users_repository import UsersRepository
 from app.common.exceptions import NotFoundError,BadRequestError,ConflictError
 from app.repositories.properties_repository import PropertiesRepository
-from app.models.users import Role
+from app.database.models.users import Role
 
 
 class UserValidation:

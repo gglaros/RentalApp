@@ -2,7 +2,7 @@
 from sqlalchemy import String, Integer, ForeignKey, DateTime, Index, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
-from app.db.base import Base
+from app.database.db.base import Base
 
 
 class Property(Base):

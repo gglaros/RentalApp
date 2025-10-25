@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from app.models.users import User
+from app.database.models.users import User
 from sqlalchemy.exc import IntegrityError
 from app.api.errors import translate_integrity_error
 

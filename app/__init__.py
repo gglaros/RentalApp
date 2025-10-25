@@ -1,7 +1,7 @@
 from flask import Flask
-from app.db.engine import engine
-from app.db.base import Base
-from app.db.session import remove_scoped_session
+from app.database.db.engine import engine
+from app.database.db.base import Base
+from app.database.db.session import remove_scoped_session
 from app.api.v1.users_routes import bp as users_bp
 from app.api.v1.properties_routes import bp as properties_bp
 from app.api.errors import register_error_handlers

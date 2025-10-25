@@ -8,7 +8,7 @@ class PropertyCreateSchema(Schema):
     square_feet = fields.Integer(required=True , validate=validate.Range(min=1))
     year_built = fields.Integer(required=True ,validate=validate.Range(min=1))
     status = fields.String(required=True, validate=validate.OneOf(["DRAFT","PENDING","APPROVED","REJECTED","HIDDEN"]))
-    owner_id = fields.Integer(required=True)
+    # owner_id = fields.Integer(required=True)
 
 class PropertyOutSchema(Schema):
     id = fields.Int()

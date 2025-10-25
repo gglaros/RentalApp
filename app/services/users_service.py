@@ -1,20 +1,26 @@
 from werkzeug.security import generate_password_hash
-from app.models.users import User, Role
+from app.database.models.users import User, Role
 from app.repositories.users_repository import UsersRepository
 from app.common.exceptions import  ConflictError, BadRequestError,NotFoundError
 from app.repositories.properties_repository import PropertiesRepository
 from app.validation.user_validation import UserValidation
-from app.db.session import get_session
+from app.auth.token_utils import create_access_token
+from app.database.db.session import get_session
+from app.api.schemas.users import UserOutSchema
 
 class UsersService:
     def __init__(self):
         self.session = get_session() 
         self.users = UsersRepository(get_session())
+        self.props = PropertiesRepository(get_session())
 
 
     def register(self, *, email: str, password: str, role: str, first_name=None, last_name=None, phone=None) -> User:
         print("\033[91mRegistering user with email:\033[0m")
-        UserValidation.check_email(self, email)
+        
+        existing_user = self.users.get_by_email(email)
+        if existing_user:
+            raise ConflictError(f"Email {email} is already in use from validation.")
        
         user = User(
             email=email,
@@ -23,12 +29,22 @@ class UsersService:
             first_name=first_name,
             last_name=last_name,
             phone=phone,)
+        
         self.users.create(user)
-        return user
+        token = create_access_token(user.id, user.role.name)
+        
+        return {
+        "user": UserOutSchema().dump(user),
+        "token": token,
+    }, 201
 
 
     def get(self, user_id: int) -> User | None:
-        UserValidation._check_user(self,user_id)
+       
+        user=self.users.get(user_id)
+        if not user:
+         raise NotFoundError(f"Owner not found in service")
+       
         user = self.users.get(user_id)
         return user
 
@@ -40,7 +56,7 @@ class UsersService:
     def update(self, user_id: int, **fields) -> User:
         user = self.users.get(user_id)
         if not user:
-            raise NotFoundError(f"Owner not found")
+            raise NotFoundError(f"user not found")
 
        
         protected = {"id", "role","password_hash", "created_at", "updated_at"}
@@ -55,6 +71,8 @@ class UsersService:
    
     def force_delete_user(self, user_id: int) -> dict:
      UserValidation._check_user(self,user_id)
+     
+     
      user = self.users.get(user_id)
     
      if user.role.name != "OWNER":

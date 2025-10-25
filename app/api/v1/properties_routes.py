@@ -1,25 +1,28 @@
 from flask import Blueprint, request, jsonify
 from flask.views import MethodView
 from marshmallow import ValidationError
-from app.db.session import get_session
-from app.db.session import session_scope
-from app.schemas.properties import PropertyCreateSchema, PropertyOutSchema,PropertyUpdateSchema
+from app.database.db.session import get_session
+from app.database.db.session import session_scope
+from app.api.schemas.properties import PropertyCreateSchema, PropertyOutSchema,PropertyUpdateSchema
 from app.services.properties_service import PropertiesService
 from flask import current_app
 from app.common.exceptions import NotFoundError
 from app.api.http import use_schema,response_schema
+from app.auth.decorators import authenticate
 
 
 bp = Blueprint("properties",__name__)
 
 
 @bp.post("/")
+@authenticate(require_owner=True)
 @use_schema(PropertyCreateSchema)
 @response_schema(PropertyOutSchema)
-def create_property(payload):
-       with session_scope():  
-        svc = PropertiesService()
-        prop = svc.create(**payload)
+def create_property(payload,user):         # user from authenticate
+       with session_scope(): 
+        payload["owner_id"] = user.id
+        prop = PropertiesService().create(**payload)
+        print("\033[91mCreated property:\033[0m", prop)
         return prop
 
 
@@ -27,15 +30,15 @@ def create_property(payload):
 @response_schema(PropertyOutSchema)
 def get_property(prop_id: int):
    with session_scope(): 
-    svc = PropertiesService()
-    prop = svc.get(prop_id)
+    # svc = PropertiesService()
+    prop = PropertiesService().get(prop_id)
     return prop
 
 
 
 @bp.get("/")
 def list_all_properties():
-    props = PropertiesService.list_all()
+    props = PropertiesService().list_all()  
     return jsonify(PropertyOutSchema(many=True).dump(props))
 
 
@@ -56,10 +59,13 @@ def update_property(payload, prop_id: int):
         return jsonify(PropertyOutSchema().dump(prop)), 200
 
 
+
 @bp.delete("/<int:prop_id>")
-def delete_property(prop_id: int):
+@authenticate(require_owner=True)
+def delete_property(prop_id: int,user):
    with session_scope():
-       result = PropertiesService().delete(prop_id)
+       print("\033[91mDeleting user id = :\033[0m", user.id)
+       result = PropertiesService().delete(prop_id,user)
        return jsonify(result)
 
 

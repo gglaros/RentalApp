@@ -1,5 +1,7 @@
+
+
 from sqlalchemy import select
-from app.models.property import Property
+from app.database.models.property import Property
 from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from app.api.errors import translate_integrity_error
@@ -59,6 +61,7 @@ class PropertiesRepository:
     
     def delete_by_owner(self, owner_id: int) -> int:
         stmt = delete(Property).where(Property.owner_id == owner_id)
+        
         res = self.session.execute(stmt)
         return getattr(res, "rowcount", 0)
     

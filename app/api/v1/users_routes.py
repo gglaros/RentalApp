@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
-from app.db.session import get_session
-from app.db.session import session_scope
+from app.database.db.session import get_session
+from app.database.db.session import session_scope
 from app.api.http import use_schema
-from app.schemas.users import UserCreateSchema, UserOutSchema,UserUpdateSchema
+from app.api.schemas.users import UserCreateSchema, UserOutSchema,UserUpdateSchema
 from app.services.users_service import UsersService
 
 bp = Blueprint("users", __name__)
@@ -12,8 +12,8 @@ bp = Blueprint("users", __name__)
 @use_schema(UserCreateSchema)
 def register(payload):
     with session_scope():
-        user = UsersService().register(**payload)
-        return jsonify(UserOutSchema().dump(user)), 201
+        return  UsersService().register(**payload)
+       
     
 
 @bp.get("/<int:user_id>")
