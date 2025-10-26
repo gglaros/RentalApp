@@ -14,14 +14,8 @@ class UsersService:
         self.users = UsersRepository(get_session())
         self.props = PropertiesRepository(get_session())
 
-
     def register(self, *, email: str, password: str, role: str, first_name=None, last_name=None, phone=None) -> User:
-        print("\033[91mRegistering user with email:\033[0m")
         
-        existing_user = self.users.get_by_email(email)
-        if existing_user:
-            raise ConflictError(f"Email {email} is already in use from validation.")
-       
         user = User(
             email=email,
             password_hash=generate_password_hash(password),
@@ -33,32 +27,39 @@ class UsersService:
         self.users.create(user)
         token = create_access_token(user.id, user.role.name)
         
-        return {
-        "user": UserOutSchema().dump(user),
-        "token": token,
-    }, 201
+        return { "user": UserOutSchema().dump(user),"token": token,}, 201
 
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    def get(self, user_id: int) -> User | None:
-       
+    def get(self, user_id: int, userAuth) -> User | None:
         user=self.users.get(user_id)
+        
         if not user:
-         raise NotFoundError(f"Owner not found in service")
-       
-        user = self.users.get(user_id)
+         raise NotFoundError(f"user not found in service")
+     
+        if user.id != userAuth.id:
+         raise BadRequestError(f"Access denied to user data in service")
+     
         return user
+        
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     def list(self, limit=50, offset=0):
         return self.users.list(limit=limit, offset=offset)
 
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    def update(self, user_id: int, **fields) -> User:
+    def update(self, userAuth, user_id: int, **fields) -> User:
         user = self.users.get(user_id)
         if not user:
             raise NotFoundError(f"user not found")
 
-       
+        if user.id != userAuth.id:
+            raise BadRequestError(f"Access denied to update user data")
+        
         protected = {"id", "role","password_hash", "created_at", "updated_at"}
         for k in list(fields.keys()):
          if k in protected or fields[k] is None:
@@ -68,17 +69,26 @@ class UsersService:
         self.session.commit()
         return updated_user
     
-   
-    def force_delete_user(self, user_id: int) -> dict:
-     UserValidation._check_user(self,user_id)
-     
-     
-     user = self.users.get(user_id)
     
-     if user.role.name != "OWNER":
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    
+    def force_delete_user(self, user_id: int,userAuth) -> dict:
+    
+     user=self.users.get(user_id)
+     
+     if not user:
+        raise NotFoundError(f"user not found in service")
+    
+     if user.id != userAuth.id and userAuth.role != Role.ADMIN:       # onyl admin and user with same id can delete other users
+          raise BadRequestError(f"Access denied to delete user data") 
+    
+     if user.role.value != "OWNER":
         self.users.delete(user)
         return {"user_deleted": True}
-
-     props_deleted = self.props.delete_by_owner(user_id)
+    
+     props_deleted = self.users.delete_by_owner(user_id)
      self.users.delete(user)
      return {"user_deleted": True, "properties_deleted": props_deleted}
+
+

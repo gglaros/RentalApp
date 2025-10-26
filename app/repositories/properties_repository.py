@@ -1,5 +1,3 @@
-
-
 from sqlalchemy import select
 from app.database.models.property import Property
 from sqlalchemy import delete
@@ -59,11 +57,11 @@ class PropertiesRepository:
        self.session.flush()
     
     
-    def delete_by_owner(self, owner_id: int) -> int:
-        stmt = delete(Property).where(Property.owner_id == owner_id)
+    # def delete_by_owner(self, owner_id: int) -> int:
+    #     stmt = delete(Property).where(Property.owner_id == owner_id)
         
-        res = self.session.execute(stmt)
-        return getattr(res, "rowcount", 0)
+    #     res = self.session.execute(stmt)
+    #     return getattr(res, "rowcount", 0)
     
     
   

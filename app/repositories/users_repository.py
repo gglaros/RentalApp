@@ -1,11 +1,14 @@
 from sqlalchemy import select
 from app.database.models.users import User
+from app.database.models.property import Property
+from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from app.api.errors import translate_integrity_error
 
 class UsersRepository:
     def __init__(self, session):
         self.session = session
+       
 
     def create(self, user: User) -> User:
         try:
@@ -40,6 +43,14 @@ class UsersRepository:
         self.session.flush()
         return user
 
+   
+ 
+    def delete_by_owner(self, owner_id: int) -> int:
+        stmt = delete(Property).where(Property.owner_id == owner_id)
+        res = self.session.execute(stmt)
+        return getattr(res, "rowcount", 0)
+       
+   
    
     
     def delete(self, user: User) -> None:

@@ -38,6 +38,11 @@ def register_error_handlers(app):
     def handle_br(e):
         return jsonify({"bad request ekanes malakia": str(e)}), 400
    
+   
+   
+    # @app.errorhandler(Exception)
+    # def handle_unexpected_error(e):
+    #   return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
     @app.errorhandler(BadRequestError)
     def handle_br(e):
@@ -69,40 +74,14 @@ def translate_integrity_error(err: IntegrityError) -> Exception:
     constraint = getattr(diag, "constraint_name", None)
     pgcode = getattr(orig, "pgcode", None)
     msg = str(orig) if orig else str(err)
-    print("\033[91mTranslating IntegrityError:\033[0m",  msg)
-    print("\033[91mTranslating IntegrityError:\033[0m",  pgcode)
-    print("\033[91mTranslating IntegrityError:\033[0m",  constraint)
-    
-  
-    # if pgcode == "23505":
-    #     # Property unique: (owner_id, address, unit_number)
-    #     if constraint == "uq_address_unit":
-    #         return ConflictError("Property already exists for this owner (address, unit_number).")
-        
-    #     # Users.email unique (προσαρμόσ’ το στο δικό σου όνομα constraint)
-    #     if constraint in {"users_email_key", "uq_users_email"}:
-    #         return ConflictError("Email already in use.")
-    #     return ConflictError("Duplicate value violates a unique constraint.")
-        
-    # # 23503: foreign_key_violation
-    # if pgcode == "23503":
-    #     # Π.χ. properties.owner_id FK
-    #     if constraint in {"properties_owner_id_fkey"}:
-    #         return NotFoundError("Owner does not exist.")
-    #     return NotFoundError("Related entity not found (foreign key violation).")
-
-    # # 23502: not_null_violation, 23514: check_violation
-    # if pgcode in {"23502", "23514"}:
-    #     return BadRequestError("Invalid or missing data for a required field.")
-
-   
+ 
 
 
 
     # Email unique
     if ("UNIQUE constraint failed: users.email" in msg) or \
        ("Duplicate entry" in msg and ("for key 'users.email'" in msg or "for key 'uq_users_email'" in msg)):
-        return ConflictError("Email already in use re papara.")
+        return ConflictError("Email already in use re papara piasto sto service.")
 
     # Foreign key
     if "FOREIGN KEY constraint failed" in msg or "a foreign key constraint fails" in msg:
@@ -110,7 +89,7 @@ def translate_integrity_error(err: IntegrityError) -> Exception:
     
     # --- Fallbacks για SQLite ---
     if "UNIQUE constraint failed: properties.address, properties.unit_number" in msg:
-     return ConflictError("Property with this address and unit number already exists.")
+     return ConflictError("Property with this address and unit number already exists papara piasto sto serivce.")
 
 
     # Γενικό fallback
