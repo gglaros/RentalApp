@@ -54,10 +54,16 @@ class PropertiesService:
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     
-    def list_by_owner(self, owner_id: int,user) -> list[Property]:
-        PropertyValidation._check_owner(self, {"owner_id": owner_id})
+    def list_by_owner(self, owner_id: int,userAuth) -> list[Property]:
+        
+        user=self.users.get(userAuth.id)
+     
+        if not user:
+         raise NotFoundError(f"user not found in property service")
+        if user.role != Role.OWNER:
+         raise BadRequestError(f"User {user.id} is not an owner")
        
-        if owner_id != user.id or user.role != Role.OWNER:
+        if owner_id != userAuth.id or userAuth.role != Role.OWNER:
          raise BadRequestError("You do not have permission to view these properties")
      
         return self.repo.list_by_owner(owner_id)
