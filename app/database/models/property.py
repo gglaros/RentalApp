@@ -20,10 +20,10 @@ class Property(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     owner_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
+    owner = relationship("User", back_populates="properties")
         
-    owner = relationship("User")
 
 
     __table_args__ = (

@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields, validate
 from marshmallow import validates_schema,Schema,fields, validates, ValidationError,validate
 from app.database.models.users import User
+from app.api.schemas.properties import PropertyOutSchema
 from app.database.db.session import get_session
 
 class UserCreateSchema(Schema):
@@ -27,6 +28,7 @@ class UserOutSchema(Schema):
     first_name = fields.String(allow_none=True)
     last_name = fields.String(allow_none=True)
     phone = fields.String(allow_none=True)
+    
   
 
 

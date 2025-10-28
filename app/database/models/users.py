@@ -1,5 +1,7 @@
 # app/models/users.py
-from sqlalchemy.orm import Mapped, mapped_column
+from __future__ import annotations
+
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean, Enum, DateTime, Integer
 from datetime import datetime
 import enum
@@ -26,3 +28,9 @@ class User(Base):
     role: Mapped[Role] = mapped_column(Enum(Role, native_enum=False), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    properties: Mapped[list["property"]] = relationship(
+        "Property",
+        back_populates="owner",
+        cascade="all, delete-orphan",  # προαιρετικό ανάλογα με την πολιτική σου
+    )

@@ -4,6 +4,7 @@ from app.database.db.base import Base
 from app.database.db.session import remove_scoped_session
 from app.api.v1.users_routes import bp as users_bp
 from app.api.v1.properties_routes import bp as properties_bp
+from app.api.v1.owner_routes import bp as owners_bp
 from app.api.errors import register_error_handlers
 
 from app.api.errors import register_error_handlers
@@ -16,6 +17,7 @@ def create_app() -> Flask:
    
     app.register_blueprint(users_bp, url_prefix="/api/v1/users")
     app.register_blueprint(properties_bp, url_prefix="/api/v1/properties")
+    app.register_blueprint(owners_bp, url_prefix="/api/v1/owners")
    
     @app.teardown_appcontext
     def cleanup(_):

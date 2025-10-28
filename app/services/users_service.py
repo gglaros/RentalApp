@@ -14,7 +14,7 @@ class UsersService:
         self.users = UsersRepository(get_session())
         self.props = PropertiesRepository(get_session())
 
-    def register(self, *, email: str, password: str, role: str, first_name=None, last_name=None, phone=None) -> User:
+    def sign_up(self, *, email: str, password: str, role: str, first_name=None, last_name=None, phone=None) -> User:
         
         user = User(
             email=email,
@@ -31,15 +31,12 @@ class UsersService:
 
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    def get(self, user_id: int, userAuth) -> User | None:
-        user=self.users.get(user_id)
+    def get(self,  userid) -> User | None:
+    
+        user=self.users.get(userid)      # user to be fetched
+        if  not user:
+         raise NotFoundError(f"user   not found in service")
         
-        if not user:
-         raise NotFoundError(f"user not found in service")
-     
-        if user.id != userAuth.id:
-         raise BadRequestError(f"Access denied to user data in service")
-     
         return user
         
 
@@ -47,7 +44,7 @@ class UsersService:
 
 
     def list(self, limit=50, offset=0):
-        return self.users.list(limit=limit, offset=offset)
+        return self.users.list_all(limit=limit, offset=offset)
 
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -73,22 +70,13 @@ class UsersService:
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     
-    def force_delete_user(self, user_id: int,userAuth) -> dict:
+    def force_delete_user(self, user_id: int) -> dict:
     
      user=self.users.get(user_id)
-     
      if not user:
         raise NotFoundError(f"user not found in service")
     
-     if user.id != userAuth.id and userAuth.role != Role.ADMIN:       # onyl admin and user with same id can delete other users
-          raise BadRequestError(f"Access denied to delete user data") 
-    
-     if user.role.value != "OWNER":
-        self.users.delete(user)
-        return {"user_deleted": True}
-    
-     props_deleted = self.users.delete_by_owner(user_id)
      self.users.delete(user)
-     return {"user_deleted": True, "properties_deleted": props_deleted}
+     return {"user_deleted": True, "user_role": user.role.value, "user_id": user.id}
 
 

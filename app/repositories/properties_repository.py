@@ -57,11 +57,5 @@ class PropertiesRepository:
        self.session.flush()
     
     
-    # def delete_by_owner(self, owner_id: int) -> int:
-    #     stmt = delete(Property).where(Property.owner_id == owner_id)
-        
-    #     res = self.session.execute(stmt)
-    #     return getattr(res, "rowcount", 0)
-    
-    
+   
   

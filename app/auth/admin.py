@@ -1,5 +1,6 @@
 from functools import wraps
-from flask import request, jsonify, g
+from flask import request, jsonify
+from flask import g
 from app.auth.token_utils import decode_token_and_get_user_id
 from app.repositories.users_repository import UsersRepository
 from app.database.db.session import get_session
@@ -26,6 +27,9 @@ def admin_authenticate(require_admin=False):
         if user.role != Role.ADMIN:
             return jsonify({"error": "Only admins can access this"}), 403
         
-        return f(*args, **kwargs)
+        
+        return f(*args,**kwargs)
     return wrapper
    return decorator
+
+#  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQURNSU4iLCJleHAiOjE3NjE2MTk2MzJ9.yaM_yVtglFhvc7VxZKs4x5IRemlbzwvgQvHB3rFF4FU

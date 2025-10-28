@@ -19,7 +19,6 @@ bp = Blueprint("properties",__name__)
 @use_schema(PropertyCreateSchema)
 def create_property(payload,userAuth):         # user from authenticate
        with session_scope(): 
-        payload["owner_id"] = userAuth.id
         prop = PropertiesService().create(userAuth,**payload)
         return jsonify(PropertyOutSchema().dump(prop)), 201
 

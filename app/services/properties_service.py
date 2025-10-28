@@ -31,6 +31,7 @@ class PropertiesService:
             else:
                 raise ConflictError("You already own this property.service")
             
+        data["owner_id"] = user.id  
         prop = Property(**data)
         self.repo.create(prop)
         return prop

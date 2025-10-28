@@ -1,10 +1,13 @@
-
 # app/api/errors.py
 from flask import jsonify
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
 from app.common.exceptions import NotFoundError, BadRequestError, ConflictError
 from werkzeug.exceptions import BadRequest,NotFound,MethodNotAllowed
+from werkzeug.exceptions import HTTPException
+import os
+
+
 
 
 
@@ -13,11 +16,12 @@ def register_error_handlers(app):
     @app.errorhandler(ValidationError)
     def handle_validation(e):
         return jsonify({"errors": e.messages}), 400
+    
+    
 
     @app.errorhandler(MethodNotAllowed)
     def handle_method_not_allowed(e):
      return jsonify({"error": "Method not allowed for this endpoint"}), 405
-
 
 
     @app.errorhandler(NotFoundError)
@@ -27,22 +31,20 @@ def register_error_handlers(app):
     
     @app.errorhandler(NotFound)
     def handle_flask_not_found(e):
-        return jsonify({"error": "Resource not found ekanes malakia"}), 404
+        return jsonify({"error": "Resource not found"}), 404
 
-    @app.errorhandler(NotFound)
-    def handle_flask_bad_request(e):
-        return jsonify({"error": "Invalid request – check your parameters ekanes malakia"}), 400
-    
-    
     @app.errorhandler(BadRequest)
-    def handle_br(e):
-        return jsonify({"bad request ekanes malakia": str(e)}), 400
-   
-   
-   
+    def handle_flask_bad_request(e):
+        return jsonify({"error": "Invalid request – check your parameters"}), 400
+    
+    
+    # if os.getenv("FLASK_ENV") == "development":
+    #  return jsonify({"error": str(error)}), 500
+
     # @app.errorhandler(Exception)
     # def handle_unexpected_error(e):
-    #   return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
+    #  if os.getenv("FLASK_ENV") == "development":
+    #   return jsonify({"error" "An unexpected error occurred erros . .":str(e)  }), 500
 
     @app.errorhandler(BadRequestError)
     def handle_br(e):
