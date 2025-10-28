@@ -35,6 +35,10 @@ class PropertiesRepository:
      return self.session.scalars(stmt).all()
  
  
+    def get_prop_by_owner_id(self, owner_id: int,prop_id:int) -> Property | None:
+     stmt = select(Property).where( Property.owner_id == owner_id,Property.id==prop_id )
+     return self.session.scalar(stmt)
+ 
 
     def list_by_owner(self, owner_id: int, limit=50, offset=0) -> list[Property]:
      stmt = (select(Property).where(Property.owner_id == owner_id).order_by(Property.id.desc()).limit(limit).offset(offset))

@@ -9,6 +9,7 @@ from flask import current_app
 from app.common.exceptions import NotFoundError
 from app.api.http import use_schema,response_schema
 from app.auth.decorators import authenticate
+from app.auth.admin import admin_authenticate
 
 
 bp = Blueprint("properties",__name__)
@@ -33,6 +34,7 @@ def get_property(prop_id: int):
 
 
 @bp.get("/")
+@admin_authenticate(require_admin=True)
 def list_all_properties():
     props = PropertiesService().list_all()  
     return jsonify(PropertyOutSchema(many=True).dump(props))

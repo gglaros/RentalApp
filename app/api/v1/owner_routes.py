@@ -16,6 +16,7 @@ bp = Blueprint("owners", __name__)
 @authenticate(require_user=True)
 def get_user(userAuth):
     user = OwnerService().get_owner(userAuth)
+    print(user.owner_applications)
     return Response(json.dumps(OwnerSchema().dump(user), sort_keys=False), mimetype="application/json"), 200
 
 

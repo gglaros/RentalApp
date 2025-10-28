@@ -1,12 +1,16 @@
 # app/models/users.py
 from __future__ import annotations
-
+from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Boolean, Enum, DateTime, Integer
 from datetime import datetime
 import enum
 from app.database.db.base import Base
+from app.database.models import ownerApplication
 
+if TYPE_CHECKING:
+    from app.database.models.property import Property
+    from app.database.models.ownerApplication import OwnerApplication
 
 class Role(enum.Enum):
     OWNER = "OWNER"
@@ -32,5 +36,11 @@ class User(Base):
     properties: Mapped[list["property"]] = relationship(
         "Property",
         back_populates="owner",
-        cascade="all, delete-orphan",  # προαιρετικό ανάλογα με την πολιτική σου
+        cascade="all, delete-orphan",  
+    )
+    
+    owner_applications:Mapped[list["OwnerApplication"]] = relationship( # type: ignore
+        "OwnerApplication",
+        back_populates="owner",
+        cascade="all, delete-orphan",
     )

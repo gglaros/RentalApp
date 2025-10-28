@@ -1,9 +1,3 @@
-# app/db/engine.py
-"""
-Δημιουργεί το SQLAlchemy Engine.
-Χρησιμοποιούμε pure SQLAlchemy 2.0 (όχι Flask-SQLAlchemy).
-"""
-
 from sqlalchemy import create_engine
 
 # --- Επιλογή βάσης ---
