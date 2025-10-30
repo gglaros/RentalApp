@@ -10,8 +10,6 @@ import os
 
 
 
-
-
 def register_error_handlers(app):
     @app.errorhandler(ValidationError)
     def handle_validation(e):
@@ -37,14 +35,6 @@ def register_error_handlers(app):
     def handle_flask_bad_request(e):
         return jsonify({"error": "Invalid request – check your parameters"}), 400
     
-    
-    # if os.getenv("FLASK_ENV") == "development":
-    #  return jsonify({"error": str(error)}), 500
-
-    # @app.errorhandler(Exception)
-    # def handle_unexpected_error(e):
-    #  if os.getenv("FLASK_ENV") == "development":
-    #   return jsonify({"error" "An unexpected error occurred erros . .":str(e)  }), 500
 
     @app.errorhandler(BadRequestError)
     def handle_br(e):
@@ -85,13 +75,19 @@ def translate_integrity_error(err: IntegrityError) -> Exception:
        ("Duplicate entry" in msg and ("for key 'users.email'" in msg or "for key 'uq_users_email'" in msg)):
         return ConflictError("Email already in use re papara piasto sto service.")
 
+
     # Foreign key
     if "FOREIGN KEY constraint failed" in msg or "a foreign key constraint fails" in msg:
         return NotFoundError("Related entity not found (foreign key violation).")
     
+   
+    
     # --- Fallbacks για SQLite ---
     if "UNIQUE constraint failed: properties.address, properties.unit_number" in msg:
      return ConflictError("Property with this address and unit number already exists papara piasto sto serivce.")
+  
+    if "UNIQUE constraint failed: ownerApplication.owner_id, ownerApplication.property_id" in msg:
+     return ConflictError("ownerapplication with this owner_id and property_id  already exists papara piasto sto serivce.")
 
 
     # Γενικό fallback

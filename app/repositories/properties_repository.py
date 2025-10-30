@@ -24,7 +24,6 @@ class PropertiesRepository:
         return self.session.get(Property, prop_id)
     
     
-    
     def find_by_address_and_unit(self, address: str, unit_number: str) -> Property | None:
      stmt = select(Property).where( Property.address == address,Property.unit_number == unit_number )
      return self.session.scalar(stmt)

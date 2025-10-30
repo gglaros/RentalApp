@@ -1,31 +1,34 @@
-import jwt
-from datetime import datetime, timedelta
-from jwt import ExpiredSignatureError, InvalidTokenError
+import time
+
+_BLOCKLIST: dict[str, int] = {}
 
 
-SECRET_KEY = "super-secret-key"  
-ALGORITHM = "HS256"
+def _now() -> int:
+    return int(time.time())
 
 
-def create_access_token(user_id: int, role: str, expires_minutes=60) -> str:
-    expire = datetime.utcnow() + timedelta(minutes=expires_minutes)
-    payload = {
-        "user_id": user_id,
-        "role": role,
-        "exp": expire,
-    }
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    return token
+def _cleanup_expired() -> None:
+   
+    now = _now()
+    expired = [jti for jti, exp in _BLOCKLIST.items() if exp <= now]
+    for jti in expired:
+        _BLOCKLIST.pop(jti, None)
 
 
-def decode_token_and_get_user_id(token: str) -> int | None:
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print("Decoded payload:", payload)
-        return payload.get("user_id")
-    except ExpiredSignatureError:
-        print("Token expired")
-        return None
-    except InvalidTokenError:
-        print("Invalid token")
-        return None
+def revoke_jti(jti: str, exp_epoch: int) -> None:
+    
+    _cleanup_expired()
+    _BLOCKLIST[jti] = exp_epoch
+
+
+def is_token_revoked(jti: str) -> bool:
+    """
+    Επιστρέφει True αν το token έχει μπει στη blocklist (ή έχει λήξει).
+    """
+    if not jti:
+        return True
+    _cleanup_expired()
+    return jti in _BLOCKLIST
+
+
+

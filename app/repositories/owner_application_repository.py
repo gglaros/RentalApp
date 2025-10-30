@@ -26,3 +26,12 @@ class OwnerApplicationRepository:
         stmt = select(OwnerApplication).limit(limit).offset(offset)
         result = self.session.execute(stmt)
         return result.scalars().all()
+    
+    
+    def get_app_by_owner_and_property(self, owner_id: int, property_id: int) -> OwnerApplication | None:
+        stmt = select(OwnerApplication).where(
+            OwnerApplication.owner_id == owner_id,
+            OwnerApplication.property_id == property_id
+        )
+        result = self.session.execute(stmt)
+        return result.scalars().first()

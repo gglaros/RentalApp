@@ -39,3 +39,8 @@ class UserUpdateSchema(Schema):
     phone = fields.String(load_default=None,validate=validate.Length(min=10, max=15))
 
 
+
+class UserLoginSchema(Schema):
+    email = fields.String(required=True,validate=lambda x: len(x) >= 3 and len(x) <= 30)
+    password = fields.Str(required=True,validate=lambda x: len(x) >= 4 and len(x) <= 50)
+

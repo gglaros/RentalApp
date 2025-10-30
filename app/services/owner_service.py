@@ -7,7 +7,7 @@ from app.repositories.owner_application_repository import OwnerApplicationReposi
 from app.repositories.properties_repository import PropertiesRepository
 from app.repositories.owner_repository import OwnerRepository
 from app.validation.user_validation import UserValidation
-from app.auth.token_utils import create_access_token
+# from app.auth.token_utils import create_access_token
 from app.database.db.session import get_session
 from app.api.schemas.users import UserOutSchema
 
@@ -36,9 +36,6 @@ class OwnerService:
      
         if user.role.value != "OWNER":
             raise BadRequestError(f"user is not an owner in owner serivce")
-        
-        print("!!!!!!HERE!!!!!!!")
-        print(user.owner_applications)
      
         return user
     
@@ -58,6 +55,7 @@ class OwnerService:
      return {"user_deleted": True, "user_role": owner.role.value, "user_id": owner.id}
 
 
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
 
     def create_owner_application(self, userAuth, prop_id, **payload) -> OwnerApplication:
@@ -67,23 +65,34 @@ class OwnerService:
             raise NotFoundError("user not found in service")
         if user.role.value != "OWNER":
             raise BadRequestError("user is not an owner")
-
+        
         prop = self.props.get(prop_id)
         if not prop:
-            raise NotFoundError("property not found in service")
+         raise NotFoundError("property not found in service")
 
-        prop = self.props.get_prop_by_owner_id(user.id, prop_id)
-        print("!!!!!!prop!!!!!!",prop)
-        print(user.id)
-        print(prop_id)
+        ownerProp = self.props.get_prop_by_owner_id(user.id, prop_id)
+        if not ownerProp:
+            raise BadRequestError("property does not belong to this owner")
+        
+        app=self.owner_apps.get_app_by_owner_and_property(user.id, prop_id)
+        
+        if app:
+            raise ConflictError("Owner application already exists for this property and owner and is ",app.status.value)
+           
         payload['property_id'] = prop_id
         payload['owner_id'] = user.id
-        
 
+        
         OwnerApp = OwnerApplication(**payload)
-        print("!!!!!!payload!!!!!!",payload)
         self.owner_apps.create(OwnerApp) 
         return OwnerApp
+
+
+
+
+
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
     
     

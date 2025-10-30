@@ -2,8 +2,9 @@ from flask import Blueprint, request, jsonify,g
 from marshmallow import ValidationError
 from app.database.db.session import get_session
 from app.database.db.session import session_scope
+from flask_jwt_extended import get_jwt,jwt_required
 from app.api.http import use_schema
-from app.api.schemas.users import UserCreateSchema, UserOutSchema,UserUpdateSchema
+from app.api.schemas.users import *
 from app.api.schemas.properties import PropertyOutSchema
 from app.api.schemas.owner_schema import OwnerSchema
 from app.api.schemas.tenant_schema import TenantSchema
@@ -19,6 +20,23 @@ bp = Blueprint("users", __name__)
 def sign_up(payload):
     with session_scope():
         return  UsersService().sign_up(**payload)
+    
+    
+    
+@bp.post("/login")
+@use_schema(UserLoginSchema)
+def login(payload):
+    with session_scope():
+        return AuthService().login(**payload)
+    
+    
+    
+@bp.post("/logout")
+@authenticate(require_user=True)
+def logout(userAuth):
+    with session_scope():
+        return AuthService().logout(userAuth)    
+    
        
       
 
@@ -56,3 +74,6 @@ def delete_user(user_id:int ):
         result = UsersService().force_delete_user(user_id)
         return jsonify(result), 202
     
+
+
+

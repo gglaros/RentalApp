@@ -30,3 +30,8 @@ class PropertyUpdateSchema(Schema):
     unit_number = fields.String(validate=validate.Length(min=1, max=10), load_default=None)
     square_feet = fields.Integer(validate=validate.Range(min=1), load_default=None)
     year_built = fields.Integer(validate=validate.Range(min=1), load_default=None)
+
+
+class PropertyMiniSchema(Schema):
+    address = fields.String()
+    

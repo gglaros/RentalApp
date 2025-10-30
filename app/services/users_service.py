@@ -3,8 +3,11 @@ from app.database.models.users import User, Role
 from app.repositories.users_repository import UsersRepository
 from app.common.exceptions import  ConflictError, BadRequestError,NotFoundError
 from app.repositories.properties_repository import PropertiesRepository
+from app.repositories.owner_repository import OwnerRepository
+from app.repositories.owner_application_repository import OwnerApplicationRepository
 from app.validation.user_validation import UserValidation
-from app.auth.token_utils import create_access_token
+from sqlalchemy.inspection import inspect
+
 from app.database.db.session import get_session
 from app.api.schemas.users import UserOutSchema
 
@@ -13,8 +16,9 @@ class UsersService:
         self.session = get_session() 
         self.users = UsersRepository(get_session())
         self.props = PropertiesRepository(get_session())
+        self.owner_apps = OwnerApplicationRepository(get_session())
 
-    def sign_up(self, *, email: str, password: str, role: str, first_name=None, last_name=None, phone=None) -> User:
+    def sign_up(self, *, email: str, password: str, role: str, first_name=str, last_name=None, phone=None) -> User:
         
         user = User(
             email=email,
@@ -24,12 +28,21 @@ class UsersService:
             last_name=last_name,
             phone=phone,)
         
-        self.users.create(user)
-        token = create_access_token(user.id, user.role.name)
         
-        return { "user": UserOutSchema().dump(user),"token": token,}, 201
+        self.users.create(user)
+        # token = create_access_token(user.id, user.role.name)
+        
+        return { "user": UserOutSchema().dump(user)}, 201
 
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+   
+
+
+
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     def get(self,  userid) -> User | None:
     
@@ -77,6 +90,5 @@ class UsersService:
         raise NotFoundError(f"user not found in service")
     
      self.users.delete(user)
-     return {"user_deleted": True, "user_role": user.role.value, "user_id": user.id}
-
+     return {"user_deleted": True, "user_role": user.role.value, "user_id": user.id}  
 

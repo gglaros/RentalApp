@@ -8,6 +8,7 @@ from app.services.properties_service import PropertiesService
 from flask import current_app
 from app.common.exceptions import NotFoundError
 from app.api.http import use_schema,response_schema
+from flask_jwt_extended import get_jwt,jwt_required
 from app.auth.decorators import authenticate
 from app.auth.admin import admin_authenticate
 

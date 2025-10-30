@@ -39,8 +39,6 @@ class User(Base):
         cascade="all, delete-orphan",  
     )
     
-    owner_applications:Mapped[list["OwnerApplication"]] = relationship( # type: ignore
+    owner_applications:Mapped[list["OwnerApplication"]] = relationship( 
         "OwnerApplication",
-        back_populates="owner",
-        cascade="all, delete-orphan",
-    )
+        back_populates="owner", cascade="all, delete-orphan",)
