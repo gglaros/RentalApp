@@ -4,20 +4,22 @@ from app.database.db.session import get_session
 from werkzeug.security import check_password_hash
 from app.common.exceptions import BadRequestError, UnauthorizedError
 from app.repositories.users_repository import UsersRepository
-# from app.auth.token_utils import create_access_token
+from app.database.db.redis import init_jwt_blocklist, redis_client,BLOCKLIST_EXPIRATION
+
 from flask_jwt_extended import create_access_token
 from app.repositories.users_repository import UsersRepository
 from app.api.schemas.users import UserCreateSchema, UserOutSchema,UserUpdateSchema
 from app.api.schemas.properties import PropertyOutSchema
 from app.api.schemas.owner_schema import OwnerSchema
 from app.api.schemas.tenant_schema import TenantSchema
-# from app.auth.token_utils import SECRET_KEY, ALGORITHM
+
+import datetime
 import jwt
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from app.auth.admin import admin_authenticate
 from app.auth.decorators import authenticate
 from flask_jwt_extended import get_jwt
-from app.auth.token_utils import revoke_jti
+
 
 
 class AuthService:
@@ -44,7 +46,7 @@ class AuthService:
             raise BadRequestError("Invalid email or password.")
 
         schema = self.get_schemas_by_user(user)
-        token = create_access_token(user.id, user.role.name)
+        token= create_access_token(identity=str(user.id),additional_claims={"role": user.role.value}, expires_delta=timedelta(hours=1), )
         return {"user": schema.dump(user), "token": token}, 200
     
     
@@ -55,10 +57,7 @@ class AuthService:
         jti =  get_jwt().get("jti")
         exp =  get_jwt().get("exp")
 
-        if not jti or not exp:
-            return jsonify({"error": "invalid_token"}), 400
-
-        revoke_jti(jti, exp)
-        return jsonify({"message": "Logout successful."}), 200
+        redis_client.setex(jti, BLOCKLIST_EXPIRATION, "revoked")
+        return {"message": "Token revoked successfully."}, 200
         
  

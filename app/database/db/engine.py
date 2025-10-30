@@ -1,14 +1,3 @@
-# from sqlalchemy import create_engine
-
-# DATABASE_URL = "sqlite:///./rental.db"
-
-# engine = create_engine(
-#     DATABASE_URL,
-#     echo=True,       
-#     future=True,      
-# )
-
-
 from sqlite3 import Connection as SQLite3Connection
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
@@ -17,7 +6,7 @@ DATABASE_URL = "sqlite:///./rental.db"
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,   # δείχνει τα SQL queries στο terminal (για debug)
+    echo=True,   
     future=True,
 )
 

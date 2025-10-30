@@ -2,7 +2,7 @@
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
-from app.auth.token_utils import is_token_revoked
+
 from app.database.db.engine import engine
 from app.database.db.base import Base
 from app.database.db.session import remove_scoped_session
@@ -12,6 +12,7 @@ from app.api.v1.owner_routes import bp as owners_bp
 from app.api.v1.ownerApplication_routes import bp as ownerApps_bp
 from app.api.errors import register_error_handlers
 from datetime import timedelta
+from app.database.db.redis import init_jwt_blocklist, redis_client
 
 def create_app() -> Flask:
    
@@ -22,6 +23,7 @@ def create_app() -> Flask:
     app.config["JWT_SECRET_KEY"] = "your-secret-key"
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
     jwt = JWTManager(app)
+    init_jwt_blocklist(app, jwt)
    
    
     app.register_blueprint(users_bp, url_prefix="/api/v1/users")
