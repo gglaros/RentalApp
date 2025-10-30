@@ -1,3 +1,5 @@
+# exceptions.py
+
 class NotFoundError(Exception):
     """Raised when a resource is not found (→ 404)."""
     pass

@@ -2,12 +2,10 @@
 from flask import jsonify
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
-from app.common.exceptions import NotFoundError, BadRequestError, ConflictError
+from app.common.exceptions import NotFoundError, BadRequestError, ConflictError,UnauthorizedError
 from werkzeug.exceptions import BadRequest,NotFound,MethodNotAllowed
 from werkzeug.exceptions import HTTPException
 import os
-
-
 
 
 def register_error_handlers(app):
@@ -15,8 +13,11 @@ def register_error_handlers(app):
     def handle_validation(e):
         return jsonify({"errors": e.messages}), 400
     
-    
 
+    @app.errorhandler(UnauthorizedError)
+    def handle_unauthorized(e: UnauthorizedError):
+        return jsonify({"error": str(e)}), 401
+    
     @app.errorhandler(MethodNotAllowed)
     def handle_method_not_allowed(e):
      return jsonify({"error": "Method not allowed for this endpoint"}), 405

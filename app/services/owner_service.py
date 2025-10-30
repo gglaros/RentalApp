@@ -1,10 +1,13 @@
 from werkzeug.security import generate_password_hash
 from app.database.models.users import User, Role
+from flask_jwt_extended import get_jwt,create_access_token,verify_jwt_in_request, get_jwt_identity
+from app.database.db.session import session_scope
 from app.database.models.ownerApplication import OwnerApplication
 from app.repositories.users_repository import UsersRepository
-from app.common.exceptions import  ConflictError, BadRequestError,NotFoundError
+from app.common.exceptions import  ConflictError, BadRequestError,NotFoundError, UnauthorizedError
 from app.repositories.owner_application_repository import OwnerApplicationRepository
 from app.repositories.properties_repository import PropertiesRepository
+from app.repositories.revoked_tokens_repository import RevokedTokensRepository
 from app.repositories.owner_repository import OwnerRepository
 from app.validation.user_validation import UserValidation
 # from app.auth.token_utils import create_access_token
@@ -31,6 +34,19 @@ class OwnerService:
     def get_owner(self,  userAuth) -> User | None:
         user=self.users.get(userAuth.id)
         
+        jwt_payload = get_jwt() 
+        jti = jwt_payload.get("jti")
+        exp_ts = jwt_payload.get("exp")  
+   
+        if not jti or not exp_ts:
+            return {"error": "invalid_jwt"}, 400
+        
+        with session_scope() as s:
+         revoked_repo = RevokedTokensRepository(s)
+         if revoked_repo.is_revoked(jti):
+    
+             raise UnauthorizedError("Token has been revoked (logout detected malaka).") 
+         
         if not user:
          raise NotFoundError(f"user not found in service")
      

@@ -2,7 +2,7 @@
 from app.database.models.users import User, Role
 from app.database.models.property import Property
 from werkzeug.security import generate_password_hash
-from app.auth.token_utils import create_access_token
+from app.auth.jwt_blocklist_db import create_access_token
 from sqlalchemy.orm import sessionmaker, scoped_session
 import pytest
 
