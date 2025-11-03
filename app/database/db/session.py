@@ -1,6 +1,9 @@
 from sqlalchemy.orm import sessionmaker, scoped_session
 from contextlib import contextmanager
+
+from termcolor import colored
 from app.database.db.engine import engine
+import time
 
 SessionLocalFactory = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 Session = scoped_session(SessionLocalFactory)
@@ -17,7 +20,7 @@ def session_scope():
     session = get_session()
     try:
         yield session
-        session.commit()
+        session.commit() 
     except:
         session.rollback()
         raise

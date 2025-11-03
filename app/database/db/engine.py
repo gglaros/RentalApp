@@ -14,5 +14,5 @@ engine = create_engine(
 def _enable_sqlite_foreign_keys(dbapi_connection, connection_record):
     if isinstance(dbapi_connection, SQLite3Connection):
         cursor = dbapi_connection.cursor()
-        # cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()

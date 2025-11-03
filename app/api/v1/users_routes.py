@@ -1,13 +1,7 @@
-from flask import Blueprint, request, jsonify,g
-from marshmallow import ValidationError
-from app.database.db.session import get_session
+from flask import Blueprint, jsonify
 from app.database.db.session import session_scope
-from flask_jwt_extended import get_jwt,jwt_required
 from app.api.http import use_schema
 from app.api.schemas.users import *
-from app.api.schemas.properties import PropertyOutSchema
-from app.api.schemas.owner_schema import OwnerSchema
-from app.api.schemas.tenant_schema import TenantSchema
 from app.services.users_service import UsersService
 from app.services.auth_service import AuthService
 from app.auth.admin import admin_authenticate
@@ -38,8 +32,6 @@ def logout(userAuth):
         return AuthService().logout(userAuth)    
     
        
-      
-
 @bp.get("/<int:user_id>")                                 #profile
 @admin_authenticate(require_admin=True)
 def get_user(user_id: int):
@@ -74,6 +66,3 @@ def delete_user(user_id:int ):
         result = UsersService().force_delete_user(user_id)
         return jsonify(result), 202
     
-
-
-

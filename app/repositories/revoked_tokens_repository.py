@@ -19,6 +19,7 @@ class RevokedTokensRepository:
     def add(self, jti: str, user_id: int | None, expires_at: datetime) -> None:
         
         rt = RevokedToken(jti=jti, user_id=user_id, expires_at=expires_at)
+        print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Adding revoked token: {rt}")
         self.session.add(rt)
         try:
             self.session.commit()

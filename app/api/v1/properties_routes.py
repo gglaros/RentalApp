@@ -26,10 +26,11 @@ def create_property(payload,userAuth):         # user from authenticate
 
 
 @bp.get("/<int:prop_id>")
+@authenticate(require_user=True)
 @response_schema(PropertyOutSchema)
-def get_property(prop_id: int):
+def get_property(prop_id: int,userAuth):
    with session_scope(): 
-    prop = PropertiesService().get(prop_id)
+    prop = PropertiesService().get(prop_id,userAuth)
     return prop
 
 

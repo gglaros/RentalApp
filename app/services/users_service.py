@@ -1,3 +1,4 @@
+from termcolor import colored
 from werkzeug.security import generate_password_hash
 from app.database.models.users import User, Role
 from app.repositories.users_repository import UsersRepository
@@ -7,7 +8,7 @@ from app.repositories.owner_repository import OwnerRepository
 from app.repositories.owner_application_repository import OwnerApplicationRepository
 from app.validation.user_validation import UserValidation
 from sqlalchemy.inspection import inspect
-
+import time
 from app.database.db.session import get_session
 from app.api.schemas.users import UserOutSchema
 
@@ -30,16 +31,8 @@ class UsersService:
         
         
         self.users.create(user)
-        # token = create_access_token(user.id, user.role.name)
         
         return { "user": UserOutSchema().dump(user)}, 201
-
-#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-   
-
-
-
 
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

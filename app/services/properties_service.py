@@ -38,7 +38,7 @@ class PropertiesService:
     
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    def get(self, prop_id: int):
+    def get(self, prop_id: int,userAuth):
         prop = self.repo.get(prop_id)
         if not prop:
             raise NotFoundError(f"Property {prop_id} not found in validation")    
@@ -58,15 +58,14 @@ class PropertiesService:
     def list_by_owner(self, owner_id: int,userAuth) -> list[Property]:
         
         user=self.users.get(userAuth.id)
+        owner=self.users.get(owner_id)
      
-        if not user:
-         raise NotFoundError(f"user not found in property service")
-        if user.role != Role.OWNER:
-         raise BadRequestError(f"User {user.id} is not an owner")
-       
-        if owner_id != userAuth.id or userAuth.role != Role.OWNER:
+        if not user or not owner:
+         raise NotFoundError(f"user or owner not found in property service")
+        
+        if owner_id != userAuth.id and user.role != Role.ADMIN:
          raise BadRequestError("You do not have permission to view these properties")
-     
+        
         return self.repo.list_by_owner(owner_id)
 
     
@@ -95,8 +94,9 @@ class PropertiesService:
         prop = self.repo.get(prop_id)
         if not prop:
          raise NotFoundError(f"Property {prop_id} not found")
-         
-        if prop.owner_id != user.id:
+        
+        print("USER ROLE",user.role) 
+        if prop.owner_id != user.id and user.role != Role.ADMIN:
          raise BadRequestError("You do not have permission to delete this property")
         
         self.repo.delete(prop)
