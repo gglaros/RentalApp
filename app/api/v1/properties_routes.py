@@ -25,6 +25,7 @@ def create_property(payload,userAuth):         # user from authenticate
         return jsonify(PropertyOutSchema().dump(prop)), 201
 
 
+
 @bp.get("/<int:prop_id>")
 @authenticate(require_user=True)
 @response_schema(PropertyOutSchema)

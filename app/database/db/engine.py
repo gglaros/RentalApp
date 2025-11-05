@@ -1,12 +1,15 @@
 from sqlite3 import Connection as SQLite3Connection
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
+from pathlib import Path
+import os
 
-DATABASE_URL = "sqlite:///./rental.db"
+
+DATABASE_URL = "sqlite:////home/giorgos/Documents/projects/rentalApp/backend/rental.db"
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,   
+    echo=True,
     future=True,
 )
 

@@ -3,6 +3,7 @@ from app.database.models.property import Property
 from app.database.models.users import User, Role
 from app.database.models.ownerApplication import OwnerApplication
 from sqlalchemy import delete
+from app.database.db.session import get_session
 from sqlalchemy.exc import IntegrityError
 from app.api.errors import translate_integrity_error
 
@@ -35,3 +36,23 @@ class OwnerApplicationRepository:
         )
         result = self.session.execute(stmt)
         return result.scalars().first()
+    
+    
+    def get_app_by_id(self, id: int) -> OwnerApplication | None:
+        stmt = select(OwnerApplication).where(
+            OwnerApplication.id == id
+        )
+        result = self.session.execute(stmt)
+        return result.scalars().first()
+    
+    
+    
+    def update_status(self, owner_app: OwnerApplication, status: str) -> OwnerApplication | None:
+        owner_app.status = status
+        self.session.flush()
+        return owner_app
+    
+    
+    def delete(self, owner_app: OwnerApplication) -> None:
+        self.session.delete(owner_app)
+        self.session.flush()

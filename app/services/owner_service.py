@@ -56,17 +56,15 @@ class OwnerService:
 
     def delete_owner(self, owner_id:int,userAuth ) -> dict:
     
-     owner=self.users.get(owner_id)
-     if not owner:
+     user=self.users.get(owner_id)
+     if not user:
         raise NotFoundError(f"user not found in service")
-     print(colored (userAuth ,'red'))
-     print(colored (userAuth.id,'red' ))
-     print(colored (userAuth.role.value,'red' )) 
-     if owner.id != userAuth.id:
+    
+     if user.id != userAuth.id and user.role.value != "ADMIN":
         raise BadRequestError(f"Access denied to delete user data")
     
-     self.users.delete(owner)
-     return {"user_deleted": True, "user_role": owner.role.value, "user_id": owner.id}
+     self.users.delete(user)
+     return {"user_deleted": True, "user_role": user.role.value, "user_id": user.id}
 
 
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
@@ -96,19 +94,45 @@ class OwnerService:
         payload['property_id'] = prop_id
         payload['owner_id'] = user.id
 
-        
         OwnerApp = OwnerApplication(**payload)
         self.owner_apps.create(OwnerApp) 
         return OwnerApp
 
 
-
-
-
-
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-
     
     
     def list_owner_applications(self, limit=50, offset=0):
      return self.owner_apps.list_owner_applications(limit=limit, offset=offset)
+ 
+ #//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+    def update_owner_application_status(self, app_id: int, **payload) -> OwnerApplication:
+        owner_app = self.owner_apps.get_app_by_id(app_id)
+        print(colored(owner_app,  'blue'))
+        print(colored(payload['status'],  'blue'))
+        
+        if not owner_app:
+            raise NotFoundError("Owner application not found")
+        
+        self.owner_apps.update_status(owner_app,payload['status'])
+        self.session.commit()
+        return owner_app
+    
+    
+    
+    def delete_owner_application(self, app_id:int,userAuth ) -> dict:
+    
+     user=self.users.get(userAuth.id)
+     if not user:
+        raise NotFoundError(f"user not found in service")
+    
+     owner_app = self.owner_apps.get_app_by_id(app_id)
+     if not owner_app:
+         raise NotFoundError("Owner application not found")
+     
+     if owner_app.owner_id != user.id and user.role.value != "ADMIN":
+        raise BadRequestError(f"Access denied to delete owner application")
+    
+     self.owner_apps.delete(owner_app)
+     return {"owner_application_deleted": True, "owner_id": owner_app.owner_id, "application_id": owner_app.id}

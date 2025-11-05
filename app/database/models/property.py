@@ -5,9 +5,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from app.database.db.base import Base
 
+
 if TYPE_CHECKING:
     from app.database.models.users import User
     from app.database.models.ownerApplication import OwnerApplication
+    from app.database.models.tenantApplication import TenantApplication
 
 class Property(Base):
     __tablename__ = "properties"
@@ -19,6 +21,7 @@ class Property(Base):
     price: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[str] = mapped_column(String(200), nullable=False)
     square_feet: Mapped[int] = mapped_column(Integer, nullable=False)
+    
     year_built: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
@@ -31,6 +34,9 @@ class Property(Base):
 
  #   one property -> many owner applications
     owner_applications: Mapped[List["OwnerApplication"]] = relationship("OwnerApplication",back_populates="property", foreign_keys="[OwnerApplication.property_id]", cascade="all, delete-orphan",)
+
+    tenant_applications: Mapped[List["TenantApplication"]] = relationship("TenantApplication",back_populates="property", foreign_keys="[TenantApplication.property_id]", cascade="all, delete-orphan",)
+
     
     __table_args__ = (
     UniqueConstraint("id", "owner_id", name="uq_property_id_owner"),
@@ -38,4 +44,3 @@ class Property(Base):
     Index("ix_properties_owner_id", "owner_id"),
     Index("ix_properties_status", "status"),
 )
-

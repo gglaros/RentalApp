@@ -42,4 +42,5 @@ shapes
 base.drawio
 alembic/
 
+app/migrations
 
