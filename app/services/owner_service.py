@@ -9,6 +9,7 @@ from app.repositories.owner_application_repository import OwnerApplicationReposi
 from app.repositories.properties_repository import PropertiesRepository
 from app.repositories.revoked_tokens_repository import RevokedTokensRepository
 from app.repositories.owner_repository import OwnerRepository
+from app.repositories.tenant_application_repository import TenantRepository
 from app.auth.token import decode_token
 from app.database.db.session import get_session
 from app.api.schemas.users import UserOutSchema
@@ -20,6 +21,7 @@ class OwnerService:
         self.props = PropertiesRepository(get_session())
         self.owners = OwnerRepository(get_session())
         self.owner_apps = OwnerApplicationRepository(get_session())
+        self.tenant_apps = TenantRepository(get_session())
         
         
         
@@ -72,7 +74,7 @@ class OwnerService:
 
     def create_owner_application(self, userAuth, prop_id, **payload) -> OwnerApplication:
         user = self.users.get(userAuth.id)
-        
+       
         if not user:
             raise NotFoundError("user not found in service")
         if user.role.value != "OWNER":
@@ -96,6 +98,9 @@ class OwnerService:
 
         OwnerApp = OwnerApplication(**payload)
         self.owner_apps.create(OwnerApp) 
+        print(colored(payload,  'blue'))
+        print(colored(OwnerApp.property.id,  'blue'))
+        
         return OwnerApp
 
 
@@ -136,3 +141,20 @@ class OwnerService:
     
      self.owner_apps.delete(owner_app)
      return {"owner_application_deleted": True, "owner_id": owner_app.owner_id, "application_id": owner_app.id}
+ 
+ 
+ #//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+    def get_all_requests(self, userAuth) -> dict:
+     user = self.users.get(userAuth.id)
+     if not user:
+        raise NotFoundError(f"User with id={userAuth.id} not found")
+     if user.role.value != "OWNER":
+        raise BadRequestError(f"Access denied to delete owner application")
+
+     apps = self.tenant_apps.get_all_apps(owner_id=user.id)
+     
+     print(colored(len(apps) ,"red"))
+     
+     
+     return apps

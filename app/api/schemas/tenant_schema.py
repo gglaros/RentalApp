@@ -1,4 +1,6 @@
 from marshmallow import Schema, fields, validate
+from app.api.schemas.tenant_application import TenantApplicationOutSchema
+
 
 
 
@@ -7,3 +9,4 @@ class TenantSchema(Schema):
     email = fields.Email(required=True)
     role = fields.Str()
     phone = fields.String(required=True, validate=validate.Length(min=10, max=15))
+    tenant_applications = fields.List(fields.Nested(TenantApplicationOutSchema))

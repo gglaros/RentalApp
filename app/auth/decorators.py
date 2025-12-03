@@ -15,11 +15,12 @@ def authenticate(require_user=False):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-           
+            # print('\033[31mHello World but Red!\033[0m')
             token = request.headers.get("Authorization")
-            
+        
             if not token or not token.startswith("Bearer "):
-             return jsonify({"error": "Missing or invalid Authorization header"}), 401
+             print('\033[31mToken error malaka!\033[0m')   
+             return jsonify({"error": "Missing or invalid Authorization header token"}), 401
             
             token=token.split(" ", 1)[1].strip()
             
@@ -30,11 +31,12 @@ def authenticate(require_user=False):
             
             decoded=decode_token(token)
             id=decoded["userId"]
+          
             
             user = UsersRepository(get_session()).get(id)
             if not user:
                 return jsonify({"error": "User not found auth"}), 404
-
+          
             return f(*args, userAuth=user, **kwargs)
         return wrapper
     return decorator

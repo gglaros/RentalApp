@@ -19,7 +19,7 @@ class UsersService:
         self.props = PropertiesRepository(get_session())
         self.owner_apps = OwnerApplicationRepository(get_session())
 
-    def sign_up(self, *, email: str, password: str, role: str, first_name=str, last_name=None, phone=None) -> User:
+    def sign_up(self, *, email: str, password: str, role: str, first_name=str, last_name=str, phone=str) -> User:
         
         user = User(
             email=email,

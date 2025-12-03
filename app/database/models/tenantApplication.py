@@ -22,11 +22,11 @@ class TenantApplication(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     status: Mapped[ApplicationStatus] = mapped_column(Enum(ApplicationStatus, native_enum=False),nullable=False,default=ApplicationStatus.PENDING )
     
-    property_id: Mapped[int] = mapped_column( ForeignKey("properties.id", ondelete="CASCADE"),  nullable=False,  index=True, )
+    tenant: Mapped["User"] = relationship( "User", back_populates="tenant_applications", foreign_keys="[TenantApplication.tenant_id]")
     tenant_id: Mapped[int] = mapped_column( ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True, )
     
     property: Mapped["Property"] = relationship( "Property", back_populates="tenant_applications",foreign_keys="[TenantApplication.property_id]")
-    tenant: Mapped["User"] = relationship( "User", back_populates="tenant_applications", foreign_keys="[TenantApplication.tenant_id]")
+    property_id: Mapped[int] = mapped_column( ForeignKey("properties.id", ondelete="CASCADE"),  nullable=False,  index=True, )
     
     
     __table__args__ = (
