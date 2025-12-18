@@ -1,0 +1,46 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ---- Virtual environment ----
+venv/
+env/
+ENV/
+rentalenv
+
+# ---- Environment variables ----
+.env
+*.env
+
+# ---- Logs ----
+*.log
+
+# ---- Database files ----
+*.sqlite3
+*.db
+
+# ---- OS and editor files ----
+.DS_Store
+Thumbs.db
+
+# ---- IDEs ----
+.vscode/
+.idea/
+
+# ---- Build / dist folders ----
+build/
+dist/
+
+backend/rental.db
+
+alembic.ini
+
+tools/
+shapes
+base.drawio
+alembic/
+
+app/migrations
+
