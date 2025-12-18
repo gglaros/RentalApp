@@ -1,0 +1,73 @@
+<<<<<<< HEAD
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+=======
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ---- Virtual environment ----
+venv/
+env/
+ENV/
+rentalenv
+
+# ---- Environment variables ----
+.env
+*.env
+
+# ---- Logs ----
+*.log
+
+# ---- Database files ----
+*.sqlite3
+*.db
+
+# ---- OS and editor files ----
+.DS_Store
+Thumbs.db
+
+# ---- IDEs ----
+.vscode/
+.idea/
+
+# ---- Build / dist folders ----
+build/
+dist/
+
+backend/rental.db
+
+alembic.ini
+
+tools/
+shapes
+base.drawio
+alembic/
+
+app/migrations
+
+>>>>>>> 43beff7e84d2e3ac1904bcd2af77a1a6bb30b02c
