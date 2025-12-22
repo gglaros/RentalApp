@@ -8,9 +8,9 @@ class PropertyCreateSchema(Schema):
     unit_number = fields.String(required=True, validate=validate.Length(min=1, max=10))
     square_feet = fields.Integer(required=True , validate=validate.Range(min=1))
     year_built = fields.Integer(required=True ,validate=validate.Range(min=1))
-    status = fields.String(load_default="DRAFT", validate=validate.OneOf(["DRAFT","PENDING","APPROVED","REJECTED","HIDDEN"]) )
+    status = fields.String(load_default="PENDING", validate=validate.OneOf(["PENDING","APPROVED","REJECTED"]) )
     
-    # owner_id = fields.Integer(required=True)
+   
 
 class PropertyOutSchema(Schema):
     id = fields.Int()
@@ -21,7 +21,6 @@ class PropertyOutSchema(Schema):
     square_feet = fields.Integer()
     year_built = fields.Integer()
     status = fields.String()
-    owner_id = fields.Integer()
     owner = fields.Nested(UserOutSchema)
     
    
@@ -39,4 +38,8 @@ class PropertyUpdateSchema(Schema):
 class PropertyMiniSchema(Schema):
     address = fields.String()
     unit_number = fields.String()
+    description= fields.String()
+    year_built = fields.String()
+    owner = fields.Nested(UserOutSchema)
+    
     

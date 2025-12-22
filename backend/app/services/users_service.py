@@ -83,5 +83,5 @@ class UsersService:
         raise NotFoundError(f"user not found in service")
     
      self.users.delete(user)
-     return {"user_deleted": True, "user_role": user.role.value, "user_id": user.id}  
+     return {"user_deleted": True,"user_email":user.email}  
 

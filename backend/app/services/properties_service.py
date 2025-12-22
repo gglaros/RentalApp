@@ -54,6 +54,12 @@ class PropertiesService:
     
     
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    def get_approved_properties(self,) -> list[Property]:
+        return  self.repo.list_approved()
+        
+    
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     
     def list_by_owner(self, owner_id: int,userAuth) -> list[Property]:
@@ -102,5 +108,6 @@ class PropertiesService:
         
         self.repo.delete(prop)
         return {"message": "Property deleted"}
-        
+    
+    
         

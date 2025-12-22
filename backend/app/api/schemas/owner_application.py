@@ -11,4 +11,5 @@ class OwnerApplicationOutSchema(Schema):
     
     
 class OwnerApplicationUpdateSchema(Schema):
-    status = fields.String(required=True, validate=validate.OneOf(["PENDING", "APPROVED", "REJECTED"]))
+     status = fields.String(required=True, validate=validate.OneOf(["PENDING", "APPROVED", "REJECTED"]))
+    

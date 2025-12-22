@@ -124,7 +124,18 @@ class OwnerService:
         self.session.commit()
         return owner_app
     
+#//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    def update_property_status(self,app:OwnerApplication):
+         print(colored(app.status.value,'blue'))
+         prop=self.props.update_status(app.property_id,app.status)
+         print("proporporpropror")
+         print(colored(prop.status,'blue'))
+         return app.status
+         
     
+#//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     def delete_owner_application(self, app_id:int,userAuth ) -> dict:
     

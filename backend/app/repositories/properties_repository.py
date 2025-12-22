@@ -29,10 +29,17 @@ class PropertiesRepository:
      return self.session.scalar(stmt)
 
 
+    def list_approved(self, limit=50, offset=0) -> list[Property]:
+     stmt = select(Property).where( Property.status == "APPROVED" )
+     return self.session.scalars(stmt).all()
+
+
     def list_all(self, limit=50, offset=0) -> list[Property]:
      stmt = (select(Property).order_by(Property.id.desc()).limit(limit).offset(offset))
      return self.session.scalars(stmt).all()
  
+
+
  
     def get_prop_by_owner_id(self, owner_id: int,prop_id:int) -> Property | None:
      stmt = select(Property).where( Property.owner_id == owner_id,Property.id==prop_id )
@@ -43,7 +50,11 @@ class PropertiesRepository:
      stmt = (select(Property).where(Property.owner_id == owner_id).order_by(Property.id.desc()).limit(limit).offset(offset))
      return self.session.scalars(stmt).all()
 
-    
+    def update_status(self,prop_id:int,status ):
+        prop=self.get(prop_id)
+        prop.status = status.value
+        self.session.flush()
+        return prop
   
     def update(self, prop_id: int, **fields) -> Property | None:
         prop = self.get(prop_id)

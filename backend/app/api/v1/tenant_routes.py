@@ -24,7 +24,7 @@ def get_all_tenants():
     
 
 
-@bp.post("/create/<int:prop_id>")        
+@bp.post("/create/app/prop/<int:prop_id>")        
 @authenticate(require_user=True)
 def create_tenant_application(userAuth,prop_id):
     with session_scope():

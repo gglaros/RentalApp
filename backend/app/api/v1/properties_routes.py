@@ -35,6 +35,13 @@ def get_property(prop_id: int,userAuth):
     return prop
 
 
+@bp.get("/approved")
+def get_approved_properties():
+    with session_scope():
+        props = PropertiesService().get_approved_properties()
+        return jsonify(PropertyOutSchema(many=True).dump(props))
+        
+
 
 @bp.get("/")
 @admin_authenticate(require_admin=True)

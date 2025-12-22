@@ -11,6 +11,7 @@ from app.services.auth_service import AuthService
 from app.api.http import use_schema,response_schema
 from app.auth.admin import admin_authenticate
 from app.auth.decorators import authenticate
+from termcolor import colored
 
 
 bp = Blueprint("admin", __name__)
@@ -39,7 +40,7 @@ def list_users():
 def delete_user(user_id:int ):
     with session_scope():
         result = UsersService().force_delete_user(user_id)
-        return jsonify(UserOutSchema().dump(result)), 202
+        return jsonify(result), 202
     
     
     
@@ -50,6 +51,7 @@ def delete_user(user_id:int ):
 def update_owner_application_status(payload, app_id):
     with session_scope():
         owner_app = OwnerService().update_owner_application_status(app_id, **payload)
+        OwnerService().update_property_status(owner_app)
         return jsonify(OwnerApplicationOutSchema().dump(owner_app)), 200
     
 

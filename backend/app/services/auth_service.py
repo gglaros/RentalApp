@@ -53,7 +53,8 @@ class AuthService:
         print(colored (token , 'green'))
         decoded=decode_token(token)
         print(colored (f"decoded :{decoded} = "  , 'yellow'))
-        print(colored (f"decoded sub = :{decoded["userId"] } "  , 'red'))
+        print(colored(f"decoded sub = : {decoded['userId']}", 'red'))
+
        
         
         return {"user": schema.dump(user), "token": token}, 200
