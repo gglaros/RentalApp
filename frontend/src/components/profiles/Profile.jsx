@@ -5,6 +5,7 @@ import UserContext from "../../context/UserContext";
 import PropertyContext from "../../context/PropertyContext";
 import { OwnerProfile } from "../profiles/OwnerProfile";
 import { AdminProfile } from "../profiles/AdminProfile";
+import { TenantProfile } from "./TenantProfile";
 import axios from "axios";
 
 export const Profile = () => {
@@ -17,7 +18,6 @@ export const Profile = () => {
   if (token != null) {
     useEffect(() => {
       fetchProfile();
-      console.log(userProfile.role);
     }, []);
   }
 

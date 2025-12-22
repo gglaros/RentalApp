@@ -7,6 +7,7 @@ const PropertyContext = createContext();
 function PropertyProvider({ children }) {
   const { userProfile, fetchProfile } = useContext(UserContext);
   const [properties,setProperties] = useState([]);
+  const [approvedProperties,setApprovedProperties] = useState([]);
  
 
   const fetchProperties = useCallback(async (token) => {
@@ -23,13 +24,29 @@ function PropertyProvider({ children }) {
       if (response.status == 200) {
         console.log(response.data);
         setProperties(response.data);
-        
       }
     } catch (error) {
       console.error("Failed to fetch property", error);
     }
-   
   }, []);
+
+
+  const fetchApprovedProperties = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        "http://127.0.0.1:5000/api/v1/properties/approved",
+        
+      );
+
+      if (response.status == 200) {
+        console.log(response.data);
+        setApprovedProperties(response.data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch property", error);
+    }
+  }, []);
+
 
 
   const deleteProperty = useCallback(async (id, token) => {
@@ -82,6 +99,8 @@ function PropertyProvider({ children }) {
     deleteProperty,
     addProperty,
     fetchProperties,
+    fetchApprovedProperties,
+    approvedProperties,
     properties
   };
 

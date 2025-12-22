@@ -10,7 +10,7 @@ export const AdminProfile = () => {
   
   const { userProfile, fetchProfile } = useContext(UserContext);
   const { deleteProperty,fetchProperties,properties} = useContext(PropertyContext);
-  const {getAllApps} = useContext(AdminContext);
+  const {getAllApps,getAllUsers} = useContext(AdminContext);
   const [refresh, setRefresh] = useState(false);
   const navigate = useNavigate();
 
@@ -26,10 +26,10 @@ export const AdminProfile = () => {
     setRefresh(prev => !prev); 
   };
   
- const getApps = async (token) => {
-  await getAllApps(token);
- } ;
 
+ const getUsers = async (token) => {
+  await getAllUsers(token);
+ } ;
 
   return (
     <div className=" container rounded-b-3xl p-6">
@@ -51,21 +51,26 @@ export const AdminProfile = () => {
           Role: <span className="text-purple-500">{userProfile.role}</span>
         </h2>
 
-        <div className="flex ">
-          <h2 className="text-2xl w-80 border-2 rounded-2xl mb-1 mt-2">
-            Apps :
+        <div className="flex  justify-center w-[500px] h-[50px] ">
+          {/* <h2 className="text-2xl w-40 border-2 rounded-2xl mb-1 ml-1 mt-2">
+            see more :
+            </h2> */}
             <button
                   type="button"
-                  className="w-[100px]  mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-green-500 text-black  border-2"
-                  onClick={() => {
-                    getApps(token)
-                  }}>
-                  see apps
-                </button>
-          </h2>
+                  className="flex  mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-green-500 text-black  border-2"
+                  onClick={() => navigate("/AllOwnerApps")}>see apps</button>
+                  <button
+                  type="button"
+                  className="flex  mt-2  relative bottom-1.4  rounded-2xl text-2xl bg-green-500 text-black border-2"
+                  onClick={() => navigate("/AllUsers")}>see users</button>
+               
         </div>
+      
       </div>
 
+      <h2 className="text-3xl mt-2">
+      All  properties
+          </h2>
       <table className="w-full border-4 mt-2 rounded-2xl text-xl ">
         <thead>
           <tr>
@@ -75,7 +80,7 @@ export const AdminProfile = () => {
             <th>Square Feet</th>
             <th>Year Built</th>
             <th>Status</th>
-            <th>Action</th>
+            <th>owner email</th>
             <th>Action</th>
           </tr>
         </thead>

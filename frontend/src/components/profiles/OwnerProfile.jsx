@@ -15,14 +15,7 @@ export const OwnerProfile = () => {
   const navigate = useNavigate();
 
   const token = sessionStorage.getItem("token");
-  
-
-  // useEffect( () =>{
-  //   if (token !=null)
-  //   fetchProfile();
-  // },[]);
-
-
+ 
   return (
     <>
     {
@@ -46,7 +39,7 @@ export const OwnerProfile = () => {
     </h2>
 
     <h2 className="text-lg md:text-xl lg:text-2xl w-full md:w-80 border-2 rounded-2xl p-2 mb-2">
-      Email:{" "}
+      Role:{" "}
       <span className="text-purple-500">{userProfile.role}</span>
     </h2>
 
@@ -55,8 +48,7 @@ export const OwnerProfile = () => {
         Apps:
         <button
           className="w-[100px] md:w-[120px] rounded-2xl text-lg md:text-xl bg-green-500 text-black border-2"
-          onClick={() => navigate("/ownerApps")}
-        >
+          onClick={() => navigate("/ownerApps")}>
           see apps
         </button>
       </h2>
@@ -92,8 +84,7 @@ export const OwnerProfile = () => {
               <button
                 type="button"
                 className=" md:w-[100px] mt-3 rounded-2xl text-base md:text-xl bg-red-500 text-black border-2"
-                onClick={() => deleteProperty(property.id, token)}
-              >
+                onClick={() => deleteProperty(property.id, token)}>
                 Delete
               </button>
             </td>
@@ -112,8 +103,7 @@ export const OwnerProfile = () => {
   <button
     type="button"
     className="rounded-2xl text-xl md:text-2xl w-32 md:w-40 mt-3 bg-green-500 text-black border-2"
-    onClick={() => navigate("/propertyform")}
-  >
+    onClick={() => navigate("/propertyform")}>
     Add Property
   </button>
 </div>

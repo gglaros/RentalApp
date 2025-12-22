@@ -5,6 +5,7 @@ import axios from "axios";
 export const SignIn = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [lastName, setlastName] = useState("");
   const [role, setRole] = useState("OWNER");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
@@ -20,7 +21,7 @@ export const SignIn = () => {
       "http://127.0.0.1:5000/api/v1/users/",
       {
         first_name: name,
-        last_name: "popotas",
+        last_name: lastName,
         phone: phone,
         password: password,
         email: email,
@@ -77,9 +78,18 @@ export const SignIn = () => {
             placeholder="name"
             value={name}
             required
-            
-            onChange={(e) => setName(e.target.value)}
-          />
+            onChange={(e) => setName(e.target.value)}/>
+        </div>
+
+        <div className="flex flex-col text-left">
+          <label className="mb-1 font-medium">lastName</label>
+          <input
+            type="text"
+            className="px-3 py-2 rounded-md border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="lastName"
+            value={lastName}
+            required
+            onChange={(e) => setlastName(e.target.value)}/>
         </div>
 
         <div className="flex flex-col text-left">
@@ -113,7 +123,7 @@ export const SignIn = () => {
         <button
           type="submit"
           className="w-full py-2 rounded-md bg-primary text-primary-foreground font-medium hover:opacity-90 transition"
-        >
+          onClick={() => navigate("/login")}>
           Sign In
         </button>
 
