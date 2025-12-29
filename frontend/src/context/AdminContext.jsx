@@ -7,7 +7,7 @@ function AdminProvider({ children }) {
 
   const [apps,setApps] = useState([]);
   const [users,setUsers] = useState([]);
-   
+  console.log("good morning Admin");
   const getAllApps = useCallback(async (token) => {
     try {
       const response = await axios.get(
@@ -33,6 +33,7 @@ function AdminProvider({ children }) {
 
 
   const getAllUsers = useCallback(async (token) => {
+    console.log("good morning admincontext users");
     try {
       const response = await axios.get(
         " http://127.0.0.1:5000/api/v1/admin/users",

@@ -16,7 +16,7 @@ export const AdminProfile = () => {
 
   const token = sessionStorage.getItem("token");
 
-
+console.log("user",userProfile)
   useEffect(() => {
    fetchProperties(token);
   }, [refresh]);
@@ -27,9 +27,16 @@ export const AdminProfile = () => {
   };
   
 
- const getUsers = async (token) => {
-  await getAllUsers(token);
- } ;
+  const handleUsers = async (token, event) => {
+    if (event.metaKey || event.ctrlKey) {
+      const url = '/AllUsers';
+      window.open(url, '_blank'); 
+      return;
+    }
+    navigate('/AllUsers')
+  };
+  
+
 
   return (
     <div className=" container rounded-b-3xl p-6">
@@ -57,13 +64,14 @@ export const AdminProfile = () => {
             </h2> */}
             <button
                   type="button"
-                  className="flex  mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-green-500 text-black  border-2"
+                  className="flex mr-2 mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-green-500 text-black  border-2"
                   onClick={() => navigate("/AllOwnerApps")}>see apps</button>
-                  <button
-                  type="button"
-                  className="flex  mt-2  relative bottom-1.4  rounded-2xl text-2xl bg-green-500 text-black border-2"
-                  onClick={() => navigate("/AllUsers")}>see users</button>
-               
+            
+            <button type="button" className="flex mr-2 mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-green-500 text-black  border-2"
+            onClick={(e) => { handleUsers(token, e);}}> see All Users</button>
+
+           <button type="button" className="w-[130px]  mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-blue-500 text-black  border-2"
+            onClick={() => {navigate('/Edit') } }>Edit profile</button>
         </div>
       
       </div>

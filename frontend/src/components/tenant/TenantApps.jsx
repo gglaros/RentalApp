@@ -4,19 +4,12 @@ import OwnerAppCotext from "../../context/OwnerAppContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export const  OwnerApps = () => {
+export const  TenantApps = () => {
     const { userProfile, fetchProfile } = useContext(UserContext);
     const {makeApp,deleteApp,message} = useContext(OwnerAppCotext)
     const navigate = useNavigate();
     const token = sessionStorage.getItem("token");
   
-    useEffect(() => {
-      fetchProfile();
-
-    }, []);
-
-   
-
 
 return (
     <> 
@@ -31,17 +24,20 @@ return (
           <tr>
             <th>Address</th>
             <th>Unit number</th>
+            <th>Description</th>
             <th>Status</th>
+            <th>Owner's email</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {userProfile.owner_applications?.map((app, index) => (
+          {userProfile.tenant_applications?.map((app, index) => (
             <tr className="border-4" key={app.id || index}>
               <td>{app.property.address}</td>
               <td>{app.property.unit_number}</td>
+              <td>{app.property.description}</td>
               <td>{app.status}</td>
-
+              <td>{app.property.owner.email}</td>
               <td>
               <button type="button"
                   className="mt-3 relative bottom-1.5  rounded-2xl text-2xl bg-red-500 text-black border-2"

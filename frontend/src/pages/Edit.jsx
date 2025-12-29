@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import UserContext from "../context/UserContext";
 import axios from "axios";
 
-export const SignIn = () => {
+export const Edit = () => {
   const { userProfile, fetchProfile } = useContext(UserContext);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -16,31 +16,45 @@ export const SignIn = () => {
 
   const token = sessionStorage.getItem("token");
 
-  // useEffect(() => {
-  //   fetchProfile();
-  // }, []);
-  
+  useEffect(() => {
+    fetchProfile();
+  }, []);
   
 
+useEffect(() => {
+    if (userProfile) {
+      setEmail(userProfile.email || "");
+      setName(userProfile.first_name || "");
+      setlastName(userProfile.last_name || "");
+      setPhone(userProfile.phone || "");
+      setPassword(userProfile.password || "");
+      setRole(userProfile.role || "OWNER");
+      console.log(userProfile)
+    }
+  }, [userProfile]);
+  
+ 
   const onSumbit = async (e) => {
     e.preventDefault();
 
     console.log("submit");
     console.log(email, name, role, phone);
+    console.log(userProfile.id)
 
-    const response = await axios.post(
-      "http://127.0.0.1:5000/api/v1/users/",
+    const response = await axios.put(
+      `http://127.0.0.1:5000/api/v1/users/edit/${userProfile.id}`,
       {
         first_name: name,
         last_name: lastName,
         phone: phone,
         password: password,
         email: email,
-        role: role,
+        // role: role,
       },
       {
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -50,6 +64,7 @@ export const SignIn = () => {
     <div className="container  flex items-center justify-center mt-10 bg-background text-foreground ">
       <form
         onSubmit={onSumbit}
+
         className="bg-card border p-8 rounded-2xl shadow-lg w-full max-w-sm space-y-6"
       >
         <h1 className="text-3xl font-semibold text-center">Sign Up</h1>
@@ -103,20 +118,7 @@ export const SignIn = () => {
             onChange={(e) => setlastName(e.target.value)}/>
         </div>
 
-        <div className="flex flex-col text-left">
-          <label className="mb-1 font-medium">role</label>
-          <select
-            className="px-3 py-2 rounded-md border bg-background  focus:ring-primary"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="OWNER">OWNER</option>
-            <option value="TENANT">TENANT</option>
-            <option value="ADMIN">ADMIN</option>
-          </select>
-        </div>
-
-        {/* Password */}
+        Password
         <div className="flex flex-col text-left">
           <label className="mb-1 font-medium">Password</label>
           <input
@@ -124,7 +126,6 @@ export const SignIn = () => {
             className="px-3 py-2 rounded-md border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="••••••••••"
             value={password}
-            required
             minLength={1}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -134,8 +135,8 @@ export const SignIn = () => {
         <button
           type="submit"
           className="w-full py-2 rounded-md bg-primary text-primary-foreground font-medium hover:opacity-90 transition"
-          onClick={() => navigate("/login")}>
-          Sign In
+         >
+          Confirm
         </button>
 
         <p className="text-center text-sm text-foreground/60">
@@ -147,7 +148,10 @@ export const SignIn = () => {
       </form>
     </div>
 
-
-    
   );
 };
+
+
+
+
+

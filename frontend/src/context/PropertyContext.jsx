@@ -1,16 +1,22 @@
 import { createContext, useState, useCallback, useContext, use } from "react";
 import UserContext from "../context/UserContext";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const PropertyContext = createContext();
 
 function PropertyProvider({ children }) {
+  
+
   const { userProfile, fetchProfile } = useContext(UserContext);
   const [properties,setProperties] = useState([]);
   const [approvedProperties,setApprovedProperties] = useState([]);
  
-
+  const token = sessionStorage.getItem("token");
+ 
+  console.log("good morning property");
   const fetchProperties = useCallback(async (token) => {
+    console.log("PropertyProvider mpika malaka");
     try {
       const response = await axios.get(
         "http://127.0.0.1:5000/api/v1/properties/",
@@ -28,6 +34,7 @@ function PropertyProvider({ children }) {
     } catch (error) {
       console.error("Failed to fetch property", error);
     }
+  
   }, []);
 
 

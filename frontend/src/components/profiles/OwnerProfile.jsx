@@ -6,15 +6,18 @@ import UserContext from "../../context/UserContext";
 import PropertyContext from "../../context/PropertyContext";
 import OwnerAppCotext from "../../context/OwnerAppContext";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+
 
 export const OwnerProfile = () => {
   const { userProfile, fetchProfile } = useContext(UserContext);
   const { deleteProperty } = useContext(PropertyContext);
-  const {makeApp,deleteApp,message} = useContext(OwnerAppCotext)
+  const {makeApp,deleteApp,message,getRequests} = useContext(OwnerAppCotext)
 
   const navigate = useNavigate();
 
   const token = sessionStorage.getItem("token");
+
  
   return (
     <>
@@ -45,18 +48,33 @@ export const OwnerProfile = () => {
 
     <div className="flex">
       <h2 className="text-lg md:text-xl lg:text-2xl w-full border-2 rounded-2xl p-2 mt-2 flex items-center justify-between">
-        Apps:
+      
         <button
           className="w-[100px] md:w-[120px] rounded-2xl text-lg md:text-xl bg-green-500 text-black border-2"
           onClick={() => navigate("/ownerApps")}>
           see apps
         </button>
+
+        <button
+          className="w-[100px] md:w-[120px] rounded-2xl text-lg md:text-xl bg-green-500 text-black border-2"
+          onClick={() => navigate("/ownerRequests")}>
+          see requests
+        </button>
+
+        <button type="button" className="w-[130px]  mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-blue-500 text-black  border-2"
+            onClick={() => {navigate('/Edit') } }>Edit profile</button>
       </h2>
     </div>
+
+
+   
   </div>
+
+  
 
   {/* Table Wrapper for mobile scroll */}
   <div className="container overflow-x-auto mt-4">
+  <h2 className="text-3xl mt-2"> My  properties</h2>
     <table className="w-full border-4 rounded-2xl text-sm md:text-base lg:text-lg">
       <thead>
         <tr>
@@ -87,6 +105,8 @@ export const OwnerProfile = () => {
                 onClick={() => deleteProperty(property.id, token)}>
                 Delete
               </button>
+
+              
             </td>
             <td>
               <button
@@ -106,6 +126,8 @@ export const OwnerProfile = () => {
     onClick={() => navigate("/propertyform")}>
     Add Property
   </button>
+
+  
 </div>
 
 </>

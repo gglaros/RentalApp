@@ -4,20 +4,15 @@ import UserContext from "../context/UserContext";
 import axios from "axios"; 
 
 export const Logout = () => {
+  const { logout } = useContext(UserContext);
 
-const token = sessionStorage.removeItem("token")
-console.log(token)
-
-
+  useEffect(() => {
+    logout();
+  }, []);
 
 return (
-      
       <div>
         <h1>remove token</h1>
     </div>
-    
-
-)
-
-}
+)}
 

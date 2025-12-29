@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useContext } from "react";
+import { jwtDecode } from "jwt-decode";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../../context/UserContext";
@@ -6,24 +7,27 @@ import PropertyContext from "../../context/PropertyContext";
 import { OwnerProfile } from "../profiles/OwnerProfile";
 import { AdminProfile } from "../profiles/AdminProfile";
 import { TenantProfile } from "./TenantProfile";
+import { isTokenExpired } from "../../utils/auth";
 import axios from "axios";
 
 export const Profile = () => {
-  const { userProfile, fetchProfile } = useContext(UserContext);
+  const { userProfile, fetchProfile,loading } = useContext(UserContext);
   const { deleteProperty } = useContext(PropertyContext);
   const navigate = useNavigate();
 
   const token = sessionStorage.getItem("token");
 
-  if (token != null) {
     useEffect(() => {
-      fetchProfile();
+      if (isTokenExpired(token)) {
+        console.log("Token expired");
+        sessionStorage.removeItem("token");
+        return;
+      }
+  // fetchProfile();
     }, []);
-  }
 
 
-
-  if (token == null) {
+  if (token == null || userProfile==null) {
     return (
       <div className="containerList">
         <h2 className="text-2xl text-bold">
@@ -40,11 +44,9 @@ export const Profile = () => {
     );
   }
 
-
-
   switch (userProfile.role) {
         case "OWNER":  
-        return <OwnerProfile/>;
+        return <OwnerProfile  user={userProfile}/>;
     
         case "TENANT":
           return <TenantProfile user={userProfile} />;

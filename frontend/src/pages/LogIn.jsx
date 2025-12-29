@@ -1,20 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import UserContext from "../context/UserContext";
 import axios from "axios"; 
 
 
 export const LogIn = () => {
     const [email, setEmail] = useState("");
     const [password,setPassword] = useState("");
+    const { userProfile, fetchProfile,setToken } = useContext(UserContext);
     const navigate = useNavigate();
-    
+
+    useEffect(() => {
+      if (userProfile) {
+        navigate("/profile");
+      }
+    }, [userProfile, navigate]);
+
 
     const onSumbit = async (e) =>{
         e.preventDefault();
-    
-        console.log("submit")
-        console.log(email)
-        
+
         const response = await axios.post(
           "http://127.0.0.1:5000/api/v1/users/login",
           {
@@ -30,11 +35,8 @@ export const LogIn = () => {
 
         if (response.data.token) {
             sessionStorage.setItem("token", response.data.token);
-            console.log("Token stored:", response.data.token);
-            navigate("/profile")
-           
+            setToken(response.data.token)
         }
-        
     }
     
 

@@ -3,25 +3,31 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../../context/UserContext";
 import PropertyContext from "../../context/PropertyContext";
+import TenantContext from "../../context/TenantContext";
 import axios from "axios";
 
 export const TenantProfile = () => {
   const { userProfile, fetchProfile } = useContext(UserContext);
   const {fetchApprovedProperties,approvedProperties} = useContext(PropertyContext)
+  const {makeApp,message} = useContext(TenantContext);
   const navigate = useNavigate();
 
   const token = sessionStorage.getItem("token");
 
   if (token != null) {
     useEffect(() => {
-      fetchProfile();
-      fetchApprovedProperties()
-      console.log(userProfile.role);
+      // fetchProfile();
+      fetchApprovedProperties();
     }, []);
   }
 
 
   return (
+    <>
+    {
+      message && (
+        <p className="text-red-500 text-lg mt-2">{message}</p>
+      )}
     <div className=" container rounded-b-3xl p-6">
       <div className="flex flex-col justify-center items-center w-full ">
         <div>
@@ -47,7 +53,7 @@ export const TenantProfile = () => {
             Apps :
             <button
               className=" w-[120px] rounded-2xl text-2xl bg-green-500 text-black border-2 ml-20"
-              onClick={() => navigate("/ownerApps")}
+              onClick={() => navigate("/TenantApps")}
             >
               see apps
             </button>
@@ -63,7 +69,7 @@ export const TenantProfile = () => {
             <th>Description</th>
             <th>Square Feet</th>
             <th>Year Built</th>
-            <th>Status</th>
+            <th>Owner email</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -76,12 +82,16 @@ export const TenantProfile = () => {
               <td>{property.description}</td>
               <td>{property.square_feet}</td>
               <td>{property.year_built}</td>
-              <td>{property.status}</td>
+              <td>{property.owner.email}</td>
+              
               <td>
               <button type="button" className="rounded-2xl text-xl md:text-2xl w-32 md:w-40 mt-3 bg-green-500 text-black border-2"
-               onClick={() => navigate("/propertyform")}>
+               onClick={() => makeApp(property.id,token)}>
                make app
               </button>
+
+              <button type="button" className="w-[130px]  mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-blue-500 text-black  border-2"
+            onClick={() => {navigate('/Edit') } }>Edit profile</button>
               </td>
             </tr>
           ))}
@@ -90,5 +100,6 @@ export const TenantProfile = () => {
       
      
     </div>
+    </>
   );
 };

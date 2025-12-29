@@ -17,15 +17,17 @@ export const  AllOwnerApps = () => {
       getAllApps(token);
      }, [refresh]);
      
+     
      const handleDeleteApp = async (id,token) => {
        await deleteApp(id, token);
        setRefresh(prev => !prev); 
      };
-     
-    // useEffect(() => {
-    //   getAllApps(token);
-    // }, []);
 
+     const handleApproveApp = async (action,id,token) => {
+      await approveApp(action,id, token);
+      setRefresh(prev => !prev); 
+    };
+     
 
 return (
     <> 
@@ -63,7 +65,7 @@ return (
               </td>
               <td>
               <button type="button" className="mt-3 rounded-2xl text-2xl bg-green-500 text-black border-2"
-                onClick={() =>approveApp({ status: "APPROVED" },app.id,token)  }  >approve </button>
+                onClick={() =>handleApproveApp({ status: "APPROVED" },app.id,token) }  >approve </button>
               </td>
             </tr>
           ))}
