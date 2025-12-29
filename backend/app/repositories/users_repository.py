@@ -48,7 +48,7 @@ class UsersRepository:
 
     def update(self, user_id: int, **fields) -> User | None:
         user = self.get(user_id)
-        
+       
         for key, value in fields.items():
             setattr(user, key, value)
         self.session.flush()

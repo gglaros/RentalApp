@@ -31,20 +31,37 @@ class TenantRepository:
         return list(self.session.execute(stmt).scalars())
     
     
+    def all_tenant_apps(self,limit=50,offset=0) ->list[TenantApplication]:
+        stmt = select(TenantApplication).limit(limit).offset(offset)
+        return list(self.session.execute(stmt).scalars())
+    
+    
+    
+    def update_status(self, tenant_app: TenantApplication, status: str) -> TenantApplication | None:
+        tenant_app.status = status
+        self.session.flush()
+        return tenant_app
+    
+    
+    def get_tenant_app_by_id(self, id: int) -> TenantApplication | None:
+        stmt = select(TenantApplication).where(
+            TenantApplication.id == id
+        )
+        result = self.session.execute(stmt)
+        return result.scalars().first()
+        
+    
     def get_tenant_application_by_user_and_property(self, user_id: int, prop_id: int):
         stmt = select(TenantApplication).where(
-            User.id == user_id,
-            Property.id == prop_id
-        )
+        TenantApplication.tenant_id == user_id,
+        TenantApplication.property_id == prop_id
+    )
         return self.session.execute(stmt).scalar_one_or_none()
     
     
     def get_all_apps(self, owner_id: int, limit=50, offset=0) -> list[TenantApplication]:
      stmt = (
         select(TenantApplication)
-        # .options(
-        #     joinedload(TenantApplication.tenant)  #  load και tenant
-        # )
         .join(Property)
         .where(Property.owner_id == owner_id)
         .limit(limit)

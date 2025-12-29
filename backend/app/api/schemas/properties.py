@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields, validate
 from app.api.schemas.users import UserOutSchema
 
+
 class PropertyCreateSchema(Schema):
     address = fields.String(required=True, validate=validate.Length(min=3, max=200))
     price = fields.Int(required=True, validate=validate.Range(min=1))
@@ -41,5 +42,13 @@ class PropertyMiniSchema(Schema):
     description= fields.String()
     year_built = fields.String()
     owner = fields.Nested(UserOutSchema)
+    
+class PropertySchema(Schema):
+    address = fields.String()
+    unit_number = fields.String()
+    description= fields.String()
+    year_built = fields.String()
+    
+    
     
     

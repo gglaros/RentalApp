@@ -25,6 +25,7 @@ def login(payload):
         return AuthService().login(**payload)
     
     
+    
 @bp.get("/me")                                   # user profile
 @authenticate(require_user=True)
 def get_me(userAuth):
@@ -39,7 +40,6 @@ def logout(userAuth):
     with session_scope():
         return AuthService().logout(userAuth)    
     
-
 
 
 @bp.put("edit/<int:user_id>")

@@ -3,6 +3,9 @@ from marshmallow import ValidationError
 from app.database.db.session import get_session
 from app.database.db.session import session_scope
 from werkzeug.security import check_password_hash
+from argon2 import hash_password
+from termcolor import colored
+from werkzeug.security import generate_password_hash
 import jwt
 from app.auth.token import SECRET_KEY, ALGORITHM
 import hashlib
@@ -30,6 +33,7 @@ class AuthService:
        
 
     def get_schemas_by_user(self, user):
+        print("in schema!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         if user.role.name == "OWNER":
             schema = OwnerSchema()
         elif user.role.name == "TENANT":
@@ -40,6 +44,22 @@ class AuthService:
     
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    # def loginA(self):
+    #     user = self.users_repo.get(1)
+    #     user.password_hash = generate_password_hash("Temp@1234")
+
+        
+        # if not user or not check_password_hash(user.password_hash, password):
+        #     raise BadRequestError("Invalid email or password.")
+
+        # schema = self.get_schemas_by_user(user)
+        # token = create_token(user_id=user.id, role=user.role.value)
+        
+        # print(colored (token , 'green'))
+        # decoded=decode_token(token)
+        # print(colored (f"decoded :{decoded} = "  , 'yellow'))
+        # print(colored(f"decoded sub = : {decoded['userId']}", 'red'))
+    
     
     def login(self, email: str, password: str):
         user = self.users_repo.get_by_email(email)

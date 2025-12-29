@@ -9,7 +9,6 @@ from app.database.db.base import Base
 from app.database.models import ownerApplication
 from app.database.models import tenantApplication
 
-
 if TYPE_CHECKING:
     from app.database.models.property import Property
     from app.database.models.ownerApplication import OwnerApplication
@@ -49,3 +48,13 @@ class User(Base):
     tenant_applications:Mapped[list["TenantApplication"]] = relationship( 
         "TenantApplication",
         back_populates="tenant", cascade="all, delete-orphan",)
+    
+    
+    tenant_applications_to_own_properties: Mapped[list["TenantApplication"]] = relationship(
+        "TenantApplication",
+        secondary="properties",  # συνδέεται μέσω των properties
+        primaryjoin="User.id==Property.owner_id",
+        secondaryjoin="Property.id==TenantApplication.property_id",
+        viewonly=True,            # read-only
+        backref="property_owner"
+    )

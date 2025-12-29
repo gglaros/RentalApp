@@ -1,5 +1,7 @@
+from argon2 import hash_password
 from termcolor import colored
 from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash
 from app.database.models.users import User, Role
 from app.repositories.users_repository import UsersRepository
 from app.common.exceptions import  ConflictError, BadRequestError,NotFoundError
@@ -42,7 +44,10 @@ class UsersService:
         user=self.users.get(userid)      # user to be fetched
         if  not user:
          raise NotFoundError(f"user   not found in service")
-        
+        print(colored(user ,"red"))
+        print( vars(user))
+
+        print("stop here!!!!!!!!!!") 
         return user
         
 
@@ -63,13 +68,26 @@ class UsersService:
         if user.id != userAuth.id:
             raise BadRequestError(f"Access denied to update user data")
         
-        protected = {"id", "role","password_hash", "created_at", "updated_at"}
+        print('\033[31m mpisk!@!@!@!\033[0m')
+       
+        if(fields["password"]!=""):
+           print("mpikaaaa!!!!!!!!!!!!!!@@@@@@@@@@@@@@@@")
+           fields["password_hash"] = generate_password_hash(fields.pop("password"))
+        
+        protected = {"id", "role", "created_at", "updated_at"}
+        
         for k in list(fields.keys()):
          if k in protected or fields[k] is None:
             fields.pop(k, None)
-
+        
         updated_user = self.users.update(user_id, **fields)
-        self.session.commit()
+        try:
+          self.session.commit()
+        except Exception as e:
+            print("COMMIT ERROR:", e)
+            self.session.rollback()
+            raise
+
         return updated_user
     
     

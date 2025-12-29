@@ -43,6 +43,8 @@ class TenantService:
          raise BadRequestError(f"user is not a tenant in tenant service")
      
      property=self.props.get(prop_id)
+     apps=self.tenants.all_tenant_apps()
+     print(colored(apps,  'blue'))
      
      if not property:
          raise NotFoundError(f"property with id {prop_id} not found")

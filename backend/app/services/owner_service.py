@@ -3,6 +3,7 @@ from termcolor import colored
 from app.database.models.users import User, Role
 from app.database.db.session import session_scope
 from app.database.models.ownerApplication import OwnerApplication
+from app.database.models.tenantApplication import TenantApplication
 from app.repositories.users_repository import UsersRepository
 from app.common.exceptions import  ConflictError, BadRequestError,NotFoundError, UnauthorizedError
 from app.repositories.owner_application_repository import OwnerApplicationRepository
@@ -127,11 +128,26 @@ class OwnerService:
 #//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+    def update_tenant_application_status(self, app_id: int, **payload) -> TenantApplication:
+        tenant_app= self.tenant_apps.get_tenant_app_by_id(app_id)
+        
+        print(colored(app_id,  'blue'))
+        print(colored(payload['status'],  'blue'))
+        
+        if not tenant_app:
+            raise NotFoundError("tenant application not found")
+        
+        self.tenant_apps.update_status(tenant_app,payload['status'])
+        self.session.commit()
+        return tenant_app
+    
+
+ #//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+
     def update_property_status(self,app:OwnerApplication):
          print(colored(app.status.value,'blue'))
          prop=self.props.update_status(app.property_id,app.status)
-         print("proporporpropror")
-         print(colored(prop.status,'blue'))
          return app.status
          
     
@@ -160,8 +176,9 @@ class OwnerService:
      user = self.users.get(userAuth.id)
      if not user:
         raise NotFoundError(f"User with id={userAuth.id} not found")
-     if user.role.value != "OWNER":
-        raise BadRequestError(f"Access denied to delete owner application")
+    
+     if user.role.value != "OWNER" and user.role.value !="ADMIN":
+        raise BadRequestError(f"Access denied to see owner application")
 
      apps = self.tenant_apps.get_all_apps(owner_id=user.id)
      
@@ -169,3 +186,26 @@ class OwnerService:
      
      
      return apps
+ 
+ 
+ #//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+
+    def delete_request(self, request_id:int,userAuth ) -> dict:
+    
+     user=self.users.get(userAuth.id)
+     if not user:
+        raise NotFoundError(f"user not found in service")
+     print("helo@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+     print(user.id)
+     
+     request = self.tenant_apps.get_tenant_app_by_id(request_id)
+     if not request:
+         raise NotFoundError("Owner request not found")
+     print(request.property.owner.id)
+     if request.property.owner.id != user.id and user.role!="ADMIN":
+        raise BadRequestError(f"Access denied to delete owner request")
+    
+     self.owner_apps.delete(request)
+     return {"owner_application_deleted": True, "application_id": request.id}
+ 

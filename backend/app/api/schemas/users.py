@@ -31,8 +31,8 @@ class UserUpdateSchema(Schema):
     email= fields.Email(load_default=None)
     first_name= fields.String(load_default=None)
     last_name = fields.String(load_default=None)
-    phone = fields.String(load_default=None,validate=validate.Length(min=10, max=15))
-
+    phone = fields.String(load_default=None,validate=validate.Length(min=1, max=15))
+    password = fields.String(required=False, allow_none=True)
 
 
 class UserLoginSchema(Schema):

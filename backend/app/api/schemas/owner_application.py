@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, validate
-from app.api.schemas.properties import PropertyMiniSchema,PropertyOutSchema
+from app.api.schemas.properties import PropertyMiniSchema
 
 
 class OwnerApplicationOutSchema(Schema):
