@@ -21,6 +21,7 @@ class Property(Base):
     price: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[str] = mapped_column(String(200), nullable=False)
     square_feet: Mapped[int] = mapped_column(Integer, nullable=False)
+    image: Mapped[str] = mapped_column(String(500), nullable=True)
     
     year_built: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False)
