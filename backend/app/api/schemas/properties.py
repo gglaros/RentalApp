@@ -1,4 +1,5 @@
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, fields, validate, EXCLUDE
+
 from app.api.schemas.users import UserOutSchema
 
 
@@ -11,6 +12,8 @@ class PropertyCreateSchema(Schema):
     year_built = fields.Integer(required=True ,validate=validate.Range(min=1))
     status = fields.String(load_default="PENDING", validate=validate.OneOf(["PENDING","APPROVED","REJECTED"]) )
     
+    class Meta:
+        unknown = EXCLUDE
    
 
 class PropertyOutSchema(Schema):
@@ -22,6 +25,7 @@ class PropertyOutSchema(Schema):
     square_feet = fields.Integer()
     year_built = fields.Integer()
     status = fields.String()
+    image = fields.String()
     owner = fields.Nested(UserOutSchema)
     
    

@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify
+import os
+import uuid
 from flask.views import MethodView
 from marshmallow import ValidationError
 from app.database.db.session import get_session
@@ -6,21 +8,50 @@ from app.database.db.session import session_scope
 from app.api.schemas.properties import PropertyCreateSchema, PropertyOutSchema,PropertyUpdateSchema
 from app.services.properties_service import PropertiesService
 from flask import current_app
-from app.common.exceptions import NotFoundError
+from app.common.exceptions import BadRequestError, NotFoundError
 from app.api.http import use_schema,response_schema
 from flask_jwt_extended import get_jwt,jwt_required
 from app.auth.decorators import authenticate
 from app.auth.admin import admin_authenticate
+from werkzeug.utils import secure_filename
 
+
+UPLOAD_FOLDER = "uploads/properties"
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 bp = Blueprint("properties",__name__)
 
 
+# TODO FIX IMAGE
 @bp.post("/")
 @authenticate(require_user=True)
 @use_schema(PropertyCreateSchema)
 def create_property(payload,userAuth):         # user from authenticate
-       with session_scope(): 
+       with session_scope():
+        print('\033[31mHello World create property\033[0m')   
+        print("FORM:", request.form)
+        print("FILES:", request.files)
+        print("IMAGE:", request.files.get("image"))
+        print("PAYLOAD:", payload)
+        image = request.files.get("image")
+
+        if image and image.filename:
+            if not allowed_file(image.filename):
+                raise BadRequestError("Invalid image type")
+
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+            ext = image.filename.rsplit(".", 1)[1].lower()
+            filename = secure_filename(f"{uuid.uuid4().hex}.{ext}")
+            image_path = os.path.join(UPLOAD_FOLDER, filename)
+
+            image.save(image_path)
+
+            payload["image"] = image_path
+        
         prop = PropertiesService().create(userAuth,**payload)
         return jsonify(PropertyOutSchema().dump(prop)), 201
 
