@@ -16,6 +16,7 @@ def authenticate(require_user=False):
         @wraps(f)
         def wrapper(*args, **kwargs):
             print('\033[31mHello World but Red!\033[0m')
+           
             token = request.headers.get("Authorization")
         
             if not token:
@@ -35,12 +36,13 @@ def authenticate(require_user=False):
             
             decoded=decode_token(token)
             id=decoded["userId"]
-          
+            print("!!!!!!!!!!!!!!",id)
             
             user = UsersRepository(get_session()).get(id)
+            print("!!!!!!!!!!!!!!",user)
             if not user:
                 return jsonify({"error": "User not found auth"}), 404
-          
+            
             return f(*args, userAuth=user, **kwargs)
         return wrapper
     return decorator

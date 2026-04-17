@@ -48,8 +48,10 @@ class TenantRepository:
             TenantApplication.id == id
         )
         result = self.session.execute(stmt)
+        print(colored(result, 'yellow'))
         return result.scalars().first()
         
+    
     
     def get_tenant_application_by_user_and_property(self, user_id: int, prop_id: int):
         stmt = select(TenantApplication).where(

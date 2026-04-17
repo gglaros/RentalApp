@@ -5,6 +5,7 @@ import { OwnerAppProvider } from "./context/OwnerAppContext";
 import { AdminProvider } from "./context/AdminContext";
 import { TenantProvider } from "./context/TenantContext";
 import {AdminRoutes} from "./utils/AdminRoutes";
+import { OwnerRoutes } from "./utils/OwnerRoutes";
 import ReactDOM from "react-dom/client";
 import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
@@ -13,6 +14,7 @@ import { LogIn } from "./pages/LogIn";
 import { Profile } from "./components/profiles/Profile";
 import { Logout } from "./pages/Logout";
 import { PropertyForm } from "./components/PropetyForm";
+import { PropertyDetails } from "./PropertyDetails";
 import { OwnerApps } from "./components/owner/OwnerApps";
 import { TenantApps } from "./components/tenant/TenantApps";
 import { AllOwnerApps } from "./components/admin/AllOwnerApps";
@@ -39,19 +41,23 @@ function App() {
               <Route path="/login" element={<LogIn />} />
               <Route path="/logout" element={<Logout />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/propertyform" element={<PropertyForm />} />
-              <Route path="/ownerApps" element={<OwnerApps />} />
-              <Route path="/ownerRequests" element={<OwnerRequests/>} />
               
+             <Route element={<OwnerRoutes />}>
+              <Route path="/propertyform" element={<PropertyForm />} />
+              <Route path="/ownerRequests" element={<OwnerRequests/>} />
+             </Route>
+
+              <Route path="/ownerApps" element={<OwnerApps />} />
+              <Route path="/property/:id" element={<PropertyDetails />} />
+
               <Route element={<AdminRoutes />}>
-            <Route path="/AllUsers" element={<AllUsers />} />
-            <Route path="/AllOwnerApps" element={<AllOwnerApps />} />
-            
-            </Route>
-             
+              <Route path="/AllUsers" element={<AllUsers />} />
+              <Route path="/AllOwnerApps" element={<AllOwnerApps />} />
+             </Route>
+
               <Route path="/Edit" element={<Edit/>} />
               <Route path="/tenantApps" element={<TenantApps/>} />
-              
+
             </Routes>
           </Layout>
         </BrowserRouter>
@@ -59,10 +65,13 @@ function App() {
         </TenantProvider>
         </AdminProvider>
         </OwnerAppProvider>
-     
     </UserProvider>
-   
+
   );
 }
 
 export default App;
+
+
+
+

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify,Response,json
 from marshmallow import ValidationError
+from termcolor import colored
 from app.api.schemas.tenant_application import TenantApplicationOutSchema
 from app.database.db.session import session_scope
 from app.api.schemas.users import UserCreateSchema, UserOutSchema,UserUpdateSchema
@@ -49,14 +50,11 @@ def delete_request(request_id:int,userAuth):
      return jsonify(result)
 
 
-
 @bp.patch("/change/request/status/<int:tenantApp_id>")
-@use_schema(TenantApplicationUpdateSchema)
-@authenticate(require_user=True)
-def change_status(tenantApp_id,payload,userAuth):
+@authenticate(require_user=True)              # 1ο wrapper
+@use_schema(TenantApplicationUpdateSchema)   # 2ο wrapper (πιο κοντά στη συνάρτηση)
+def change_status(tenantApp_id, payload, userAuth):
     with session_scope():
       tenant_app = OwnerService().update_tenant_application_status(tenantApp_id,**payload)
       return jsonify(TenantApplicationOutSchema().dump(tenant_app)),200
     
-
-
