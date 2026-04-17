@@ -130,8 +130,9 @@ class OwnerService:
 
     def update_tenant_application_status(self, app_id: int, **payload) -> TenantApplication:
         tenant_app= self.tenant_apps.get_tenant_app_by_id(app_id)
-        
-        print(colored(app_id,  'blue'))
+        print(colored(" i am in update_tenant_application_status",  'blue'))
+        print(colored(tenant_app,  'blue'))
+        print(colored(tenant_app.status,  'blue'))
         print(colored(payload['status'],  'blue'))
         
         if not tenant_app:
@@ -198,7 +199,7 @@ class OwnerService:
         raise NotFoundError(f"user not found in service")
      print("helo@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
      print(user.id)
-     
+     print(request_id)
      request = self.tenant_apps.get_tenant_app_by_id(request_id)
      if not request:
          raise NotFoundError("Owner request not found")

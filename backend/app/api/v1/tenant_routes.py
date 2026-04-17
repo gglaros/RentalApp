@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify,Response,json
 from marshmallow import ValidationError
+from termcolor import colored
 from app.api.schemas.tenant_application import TenantApplicationOutSchema
 from app.database.db.session import session_scope
 from app.api.schemas.users import UserCreateSchema, UserOutSchema,UserUpdateSchema
@@ -31,3 +32,11 @@ def create_tenant_application(userAuth,prop_id):
         tenant_app = TenantService().create_tenant_application(userAuth,prop_id)
         return jsonify(TenantApplicationOutSchema().dump(tenant_app)), 201
     
+    
+@bp.get("/my/applications")
+@authenticate(require_user=True)
+def get_my_tenant_applications(userAuth):
+    tenant_apps = TenantService().get_my_tenant_applications(userAuth)
+    print(colored("i am in get_my_tenant_applications route", 'yellow'))
+    print(colored(tenant_apps, 'yellow'))
+    return jsonify(TenantApplicationOutSchema().dump(tenant_apps)), 200
