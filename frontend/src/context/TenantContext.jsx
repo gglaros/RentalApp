@@ -20,7 +20,7 @@ console.log("good morning tenantcontext");
             }
           );
           if (response.status == 201) {
-            console.log("all good!");
+         
           }
         } catch (error) {
           console.log(error.response.data)

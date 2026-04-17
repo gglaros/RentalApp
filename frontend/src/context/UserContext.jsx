@@ -10,8 +10,10 @@ function UserProvider({ children }) {
   const [token, setToken] = useState(() =>
     sessionStorage.getItem("token")
   );
-  console.log("good morning userContext");
-
+ 
+if(!token){
+  console.log("good morning userContext and null token");
+}
   const logout = () => {
     console.log("remove again")
     sessionStorage.clear();
@@ -51,6 +53,7 @@ function UserProvider({ children }) {
     } else {
       setUserProfile(null);
       setLoading(false);
+      console.log("logout token");
     }
   }, [token, fetchProfile]);
  

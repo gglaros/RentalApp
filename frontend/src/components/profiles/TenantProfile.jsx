@@ -1,105 +1,214 @@
-import { useState, useEffect, useCallback, useContext } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useContext ,useState} from "react";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../../context/UserContext";
 import PropertyContext from "../../context/PropertyContext";
 import TenantContext from "../../context/TenantContext";
-import axios from "axios";
 
 export const TenantProfile = () => {
   const { userProfile, fetchProfile } = useContext(UserContext);
-  const {fetchApprovedProperties,approvedProperties} = useContext(PropertyContext)
-  const {makeApp,message} = useContext(TenantContext);
-  const navigate = useNavigate();
+  const { fetchApprovedProperties, approvedProperties } =useContext(PropertyContext);
+  const { makeApp, message } = useContext(TenantContext);
+  const [refresh, setRefresh] = useState(false);
 
+  const navigate = useNavigate();
   const token = sessionStorage.getItem("token");
 
-  if (token != null) {
-    useEffect(() => {
-      // fetchProfile();
-      fetchApprovedProperties();
-    }, []);
-  }
+ 
 
+
+  useEffect(() => {
+    if (token) {
+      fetchApprovedProperties();
+    }
+  }, [token]);
 
   return (
-    <>
-    {
-      message && (
-        <p className="text-red-500 text-lg mt-2">{message}</p>
-      )}
-    <div className=" container rounded-b-3xl p-6">
-      <div className="flex flex-col justify-center items-center w-full ">
-        <div>
-          <h2 className="text-3xl mb-3  ">User Profile</h2>
+    <div className="min-h-screen bg-slate-950 text-white px-4 py-10">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {message && (
+          <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400 shadow-lg">
+            {message}
+          </div>
+        )}
+
+        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-8 shadow-2xl backdrop-blur">
+          <div className="mb-8 text-center">
+            <h1 className="text-4xl font-bold tracking-tight">
+              Tenant Profile
+            </h1>
+            <p className="mt-2 text-slate-400">
+              Browse approved properties and manage your applications
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
+              <p className="text-sm text-slate-400">Name</p>
+              <p className="mt-2 text-lg font-semibold text-purple-400">
+                {userProfile?.first_name || "—"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
+              <p className="text-sm text-slate-400">Email</p>
+              <p className="mt-2 text-lg font-semibold text-purple-400 break-all">
+                {userProfile?.email || "—"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
+              <p className="text-sm text-slate-400">Role</p>
+              <p className="mt-2 text-lg font-semibold text-purple-400">
+                {userProfile?.role || "—"}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/TenantApps")}
+              className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-sm font-medium text-emerald-400 transition-all hover:bg-emerald-500/20 hover:scale-105 active:scale-95"
+            >
+              See Apps
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/Edit")}
+              className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-sm font-medium text-blue-400 transition-all hover:bg-blue-500/20 hover:scale-105 active:scale-95"
+            >
+              Edit Profile
+            </button>
+          </div>
         </div>
 
-        <h2 className="text-2xl  w-70 border-2 rounded-2xl mb-5">
-          Name:{" "}
-          <span className="text-purple-500">{userProfile.first_name}</span>
-        </h2>
+        <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl backdrop-blur">
+          <div className="border-b border-slate-800 px-6 py-5">
+            <h2 className="text-2xl font-bold">Approved Properties</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Properties available for tenant applications
+            </p>
+          </div>
 
-        <h2 className="text-2xl w-80 border-2 rounded-2xl mb-1">
-          Email: <span className="text-purple-500">{userProfile.email}</span>
-        </h2>
+          {approvedProperties?.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm md:text-base">
+                <thead className="bg-slate-800/80 text-slate-300">
+                  <tr>
+                    <th className="px-6 py-4 text-left font-semibold">
+                      Address
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold">Price</th>
+                    <th className="px-6 py-4 text-left font-semibold">
+                      Description
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold">
+                      Square Feet
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold">
+                      Year Built
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold">
+                      Owner Email
+                    </th>
+                    <th className="px-6 py-4 text-center font-semibold">
+                      Action
+                    </th>
+                    <th className="px-6 py-4 text-center font-semibold">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
 
-        <h2 className="text-lg md:text-xl lg:text-2xl w-full md:w-80 border-2 rounded-2xl p-2 mb-2">
-         Role:{" "}
-       <span className="text-purple-500">{userProfile.role}</span>
-      </h2>
+                <tbody>
+                  {approvedProperties.map((property, index) => (
+                    <tr
+                      key={property.id || index}
+                      className="border-t border-slate-800 hover:bg-slate-800/40 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-medium text-slate-100">
+                        {property.address}
+                      </td>
 
-        <div className="flex ">
-          <h2 className="text-2xl w-80 border-2 rounded-2xl mb-1 mt-2">
-            Apps :
-            <button
-              className=" w-[120px] rounded-2xl text-2xl bg-green-500 text-black border-2 ml-20"
-              onClick={() => navigate("/TenantApps")}
-            >
-              see apps
-            </button>
-          </h2>
+                      <td className="px-6 py-4 text-slate-300">
+                        €{property.price}
+                      </td>
+
+                      <td className="px-6 py-4 text-slate-300 max-w-xs truncate">
+                        {property.description}
+                      </td>
+
+                      <td className="px-6 py-4 text-slate-300">
+                        {property.square_feet}
+                      </td>
+
+                      <td className="px-6 py-4 text-slate-300">
+                        {property.year_built}
+                      </td>
+
+                      <td className="px-6 py-4 text-slate-300 break-all">
+                        {property.owner?.email || "—"}
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        {(() => {
+                          const existingApp =
+                            userProfile.tenant_applications?.find(
+                              (app) =>
+                                app.property.address === property.address &&
+                                app.status === "PENDING"
+                            );
+
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!existingApp) {
+                                  makeApp(property.id, token);
+                                  setRefresh(!refresh);
+                                }
+                              }}
+                              disabled={!!existingApp}
+                              className={`rounded-xl border px-4 py-2 text-sm font-medium transition-all
+          ${
+            existingApp
+              ? "border-slate-600/30 bg-slate-700/20 text-slate-500 cursor-not-allowed opacity-50"
+              : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:scale-105 active:scale-95"
+          }`}
+                            >
+                              {existingApp ? "Pending..." : "Make App"}
+                            </button>
+                          );
+                        })()}
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/property/${property.id}`)}
+                          className="rounded-xl border border-green-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-green-400 transition-all hover:bg-blue-500/20 hover:scale-105 active:scale-95"
+                        >
+                          info
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="px-6 py-16 text-center">
+              <h3 className="text-2xl font-semibold text-slate-200">
+                No approved properties yet
+              </h3>
+              <p className="mt-2 text-slate-400">
+                Approved properties will appear here when available.
+              </p>
+            </div>
+          )}
         </div>
       </div>
-
-      <table className="w-full border-4 mt-2 rounded-2xl text-xl ">
-        <thead>
-          <tr>
-            <th>Address</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th>Square Feet</th>
-            <th>Year Built</th>
-            <th>Owner email</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {approvedProperties?.map((property, index) => (
-            <tr className="border-4" key={property.id || index}>
-              <td>{property.address}</td>
-              <td>{property.price}</td>
-              <td>{property.description}</td>
-              <td>{property.square_feet}</td>
-              <td>{property.year_built}</td>
-              <td>{property.owner.email}</td>
-              
-              <td>
-              <button type="button" className="rounded-2xl text-xl md:text-2xl w-32 md:w-40 mt-3 bg-green-500 text-black border-2"
-               onClick={() => makeApp(property.id,token)}>
-               make app
-              </button>
-
-              <button type="button" className="w-[130px]  mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-blue-500 text-black  border-2"
-            onClick={() => {navigate('/Edit') } }>Edit profile</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      
-     
     </div>
-    </>
   );
 };

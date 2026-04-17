@@ -1,123 +1,206 @@
-import { useState, useEffect, useCallback, useContext } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../../context/UserContext";
 import PropertyContext from "../../context/PropertyContext";
-import AdminContext from "../../context/AdminContext";
-import axios from "axios";
 
 export const AdminProfile = () => {
-  
-  const { userProfile, fetchProfile } = useContext(UserContext);
-  const { deleteProperty,fetchProperties,properties} = useContext(PropertyContext);
-  const {getAllApps,getAllUsers} = useContext(AdminContext);
+  const { userProfile } = useContext(UserContext);
+  const { deleteProperty, fetchProperties, properties } =
+    useContext(PropertyContext);
+
   const [refresh, setRefresh] = useState(false);
   const navigate = useNavigate();
-
   const token = sessionStorage.getItem("token");
 
-console.log("user",userProfile)
   useEffect(() => {
-   fetchProperties(token);
+    fetchProperties(token);
   }, [refresh]);
-  
-  const handleDelete = async (id,token) => {
-    await deleteProperty(id, token);
-    setRefresh(prev => !prev); 
-  };
-  
 
-  const handleUsers = async (token, event) => {
+  const handleDelete = async (id, token) => {
+    await deleteProperty(id, token);
+    setRefresh((prev) => !prev);
+  };
+
+  const handleUsers = (event) => {
     if (event.metaKey || event.ctrlKey) {
-      const url = '/AllUsers';
-      window.open(url, '_blank'); 
+      window.open("/AllUsers", "_blank");
       return;
     }
-    navigate('/AllUsers')
+    navigate("/AllUsers");
   };
-  
 
+  const getStatusStyle = (status) => {
+    switch (status?.toUpperCase()) {
+      case "APPROVED":
+        return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+      case "PENDING":
+        return "bg-yellow-500/15 text-yellow-400 border border-yellow-500/30";
+      case "REJECTED":
+        return "bg-red-500/15 text-red-400 border border-red-500/30";
+      default:
+        return "bg-slate-500/15 text-slate-300 border border-slate-500/30";
+    }
+  };
 
   return (
-    <div className=" container rounded-b-3xl p-6">
-      <div className="flex flex-col justify-center items-center w-full ">
-        <div>
-          <h2 className="text-3xl mb-3  ">User Profile</h2>
-        </div>
+    <div className="min-h-screen bg-slate-950 text-white px-4 py-10">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-8 shadow-2xl backdrop-blur">
+          <div className="mb-8 text-center">
+            <h1 className="text-4xl font-bold tracking-tight">Admin Profile</h1>
+            <p className="mt-2 text-slate-400">
+              Manage users, applications, and all properties
+            </p>
+          </div>
 
-        <h2 className="text-2xl  w-70 border-2 rounded-2xl mb-5">
-          Name:{" "}
-          <span className="text-purple-500">{userProfile.first_name}</span>
-        </h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
+              <p className="text-sm text-slate-400">Name</p>
+              <p className="mt-2 text-lg font-semibold text-purple-400">
+                {userProfile?.first_name || "—"}
+              </p>
+            </div>
 
-        <h2 className="text-2xl w-80 border-2 rounded-2xl mb-1">
-          Email: <span className="text-purple-500">{userProfile.email}</span>
-        </h2>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
+              <p className="text-sm text-slate-400">Email</p>
+              <p className="mt-2 text-lg font-semibold text-purple-400 break-all">
+                {userProfile?.email || "—"}
+              </p>
+            </div>
 
-        <h2 className="text-2xl w-80 border-2 rounded-2xl mb-1">
-          Role: <span className="text-purple-500">{userProfile.role}</span>
-        </h2>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
+              <p className="text-sm text-slate-400">Role</p>
+              <p className="mt-2 text-lg font-semibold text-purple-400">
+                {userProfile?.role || "—"}
+              </p>
+            </div>
+          </div>
 
-        <div className="flex  justify-center w-[500px] h-[50px] ">
-          {/* <h2 className="text-2xl w-40 border-2 rounded-2xl mb-1 ml-1 mt-2">
-            see more :
-            </h2> */}
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button
-                  type="button"
-                  className="flex mr-2 mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-green-500 text-black  border-2"
-                  onClick={() => navigate("/AllOwnerApps")}>see apps</button>
-            
-            <button type="button" className="flex mr-2 mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-green-500 text-black  border-2"
-            onClick={(e) => { handleUsers(token, e);}}> see All Users</button>
+              type="button"
+              onClick={() => navigate("/AllOwnerApps")}
+              className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-sm font-medium text-emerald-400 transition-all hover:bg-emerald-500/20 hover:scale-105 active:scale-95"
+            >
+              See Apps
+            </button>
 
-           <button type="button" className="w-[130px]  mt-2 relative bottom-1.4  rounded-2xl text-2xl bg-blue-500 text-black  border-2"
-            onClick={() => {navigate('/Edit') } }>Edit profile</button>
+            <button
+              type="button"
+              onClick={handleUsers}
+              className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-5 py-3 text-sm font-medium text-cyan-400 transition-all hover:bg-cyan-500/20 hover:scale-105 active:scale-95"
+            >
+              See All Users
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/Edit")}
+              className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-sm font-medium text-blue-400 transition-all hover:bg-blue-500/20 hover:scale-105 active:scale-95"
+            >
+              Edit Profile
+            </button>
+          </div>
         </div>
-      
+
+        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl backdrop-blur overflow-hidden">
+          <div className="border-b border-slate-800 px-6 py-5">
+            <h2 className="text-2xl font-bold">All Properties</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Overview of every property in the platform
+            </p>
+          </div>
+
+          {properties?.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm md:text-base">
+                <thead className="bg-slate-800/80 text-slate-300">
+                  <tr>
+                    <th className="px-6 py-4  font-semibold">Address</th>
+                    <th className="px-6 py-4  font-semibold">Price</th>
+                    <th className="px-6 py-4  font-semibold">Description</th>
+                    <th className="px-6 py-4  font-semibold">Square Feet</th>
+                    <th className="px-6 py-4  font-semibold">Year Built</th>
+                    <th className="px-6 py-4  font-semibold">Status</th>
+                    <th className="px-6 py-4  font-semibold">Owner Email</th>
+                    <th className="px-6 py-4 text-center font-semibold">
+                      Action
+                    </th>
+                    <th className="px-6 py-4 text-center font-semibold">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {properties.map((property, index) => (
+                    <tr
+                      key={property.id || index}
+                      className="border-t border-slate-800 hover:bg-slate-800/40 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-medium text-slate-100">
+                        {property.address}
+                      </td>
+                      <td className="px-6 py-4 text-slate-300">
+                        €{property.price}
+                      </td>
+                      <td className="px-6 py-4 text-slate-300 max-w-xs truncate">
+                        {property.description}
+                      </td>
+                      <td className="px-6 py-4 text-slate-300">
+                        {property.square_feet}
+                      </td>
+                      <td className="px-6 py-4 text-slate-300">
+                        {property.year_built}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs md:text-sm font-semibold ${getStatusStyle(
+                            property.status
+                          )}`}
+                        >
+                          {property.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-slate-300 break-all">
+                        {property.owner?.email || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(property.id, token)}
+                          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 hover:scale-105 active:scale-95"
+                        >
+                          Delete
+                        </button>
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/property/${property.id}`)}
+                          className="rounded-xl border border-green-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-green-400 transition-all hover:bg-blue-500/20 hover:scale-105 active:scale-95"
+                        >
+                          info
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="px-6 py-16 text-center">
+              <h3 className="text-2xl font-semibold text-slate-200">
+                No properties found
+              </h3>
+              <p className="mt-2 text-slate-400">
+                Properties will appear here when they are created.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-
-      <h2 className="text-3xl mt-2">
-      All  properties
-          </h2>
-      <table className="w-full border-4 mt-2 rounded-2xl text-xl ">
-        <thead>
-          <tr>
-            <th>Address</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th>Square Feet</th>
-            <th>Year Built</th>
-            <th>Status</th>
-            <th>owner email</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {properties?.map((property, index) => (
-            <tr className="border-4" key={property.id || index}>
-              <td>{property.address}</td>
-              <td>{property.price}</td>
-              <td>{property.description}</td>
-              <td>{property.square_feet}</td>
-              <td>{property.year_built}</td>
-              <td>{property.status}</td>
-              <td>{property.owner?.email}</td>
-              <td>
-                <button
-                  type="button"
-                  className="w-[100px]  mt-3 relative bottom-1.5  rounded-2xl text-2xl bg-red-500 text-black border-2"
-                  onClick={() => {
-                    handleDelete(property.id,token)
-                  }}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      
     </div>
   );
 };

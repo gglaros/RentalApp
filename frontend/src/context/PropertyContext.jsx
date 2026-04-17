@@ -78,29 +78,28 @@ function PropertyProvider({ children }) {
   }, []);
   
   
-
-  
   const addProperty = useCallback(
-    async (data,token) => {
+    async (formData, token) => {
       try {
         const response = await axios.post(
           "http://127.0.0.1:5000/api/v1/properties/",
-          data,
+          formData,
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
             },
           }
         );
+        await fetchProfile();
+  
         console.log("Property added:", response.data);
-
       } catch (error) {
         console.error("Failed to add property", error);
       }
     },
-    [ ]
+    [fetchProfile]
   );
+  
 
   const valueToShare = {
     deleteProperty,
