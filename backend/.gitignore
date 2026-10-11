@@ -44,5 +44,4 @@ alembic/
 
 app/migrations
 requirements.txt
-dockerfile
 
