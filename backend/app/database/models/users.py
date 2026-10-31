@@ -1,4 +1,3 @@
-# app/models/users.py
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -28,7 +27,7 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     first_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
-   
+
     phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     role: Mapped[Role] = mapped_column(Enum(Role, native_enum=False), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -37,24 +36,24 @@ class User(Base):
     properties: Mapped[list["property"]] = relationship(
         "Property",
         back_populates="owner",
-        cascade="all, delete-orphan",  
+        cascade="all, delete-orphan",
     )
-    
-    owner_applications:Mapped[list["OwnerApplication"]] = relationship( 
+
+    owner_applications:Mapped[list["OwnerApplication"]] = relationship(
         "OwnerApplication",
         back_populates="owner", cascade="all, delete-orphan",)
-    
-    
-    tenant_applications:Mapped[list["TenantApplication"]] = relationship( 
+
+
+    tenant_applications:Mapped[list["TenantApplication"]] = relationship(
         "TenantApplication",
         back_populates="tenant", cascade="all, delete-orphan",)
-    
-    
+
+
     tenant_applications_to_own_properties: Mapped[list["TenantApplication"]] = relationship(
         "TenantApplication",
-        secondary="properties",  # συνδέεται μέσω των properties
+        secondary="properties",
         primaryjoin="User.id==Property.owner_id",
         secondaryjoin="Property.id==TenantApplication.property_id",
-        viewonly=True,            # read-only
+        viewonly=True,
         backref="property_owner"
     )

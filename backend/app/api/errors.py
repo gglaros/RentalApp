@@ -1,23 +1,32 @@
-# app/api/errors.py
 from flask import jsonify
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
-from app.common.exceptions import NotFoundError, BadRequestError, ConflictError,UnauthorizedError
-from werkzeug.exceptions import BadRequest,NotFound,MethodNotAllowed
+from app.common.exceptions import NotFoundError, BadRequestError, ConflictError, UnauthorizedError, ForbiddenError
+from werkzeug.exceptions import BadRequest,NotFound,MethodNotAllowed,RequestEntityTooLarge
 from werkzeug.exceptions import HTTPException
-import os
 
 
 def register_error_handlers(app):
+    @app.errorhandler(Exception)
+    def handle_unexpected(e):
+        if isinstance(e, HTTPException):
+            return jsonify({"error": e.description}), e.code
+        app.logger.exception("Unhandled error")
+        return jsonify({"error": "Internal server error"}), 500
+
     @app.errorhandler(ValidationError)
     def handle_validation(e):
         return jsonify({"errors": e.messages}), 400
-    
+
 
     @app.errorhandler(UnauthorizedError)
     def handle_unauthorized(e: UnauthorizedError):
         return jsonify({"error": str(e)}), 401
-    
+
+    @app.errorhandler(ForbiddenError)
+    def handle_forbidden(e: ForbiddenError):
+        return jsonify({"error": str(e)}), 403
+
     @app.errorhandler(MethodNotAllowed)
     def handle_method_not_allowed(e):
      return jsonify({"error": "Method not allowed for this endpoint"}), 405
@@ -26,8 +35,8 @@ def register_error_handlers(app):
     @app.errorhandler(NotFoundError)
     def handle_nf(e):
         return jsonify({"error": str(e)}), 404
-    
-    
+
+
     @app.errorhandler(NotFound)
     def handle_flask_not_found(e):
         return jsonify({"error": "Resource not found"}), 404
@@ -35,7 +44,10 @@ def register_error_handlers(app):
     @app.errorhandler(BadRequest)
     def handle_flask_bad_request(e):
         return jsonify({"error": "Invalid request – check your parameters"}), 400
-    
+
+    @app.errorhandler(RequestEntityTooLarge)
+    def handle_too_large(e):
+        return jsonify({"error": "Upload too large (max 50MB per request)"}), 413
 
     @app.errorhandler(BadRequestError)
     def handle_br(e):
@@ -61,35 +73,28 @@ def register_error_handlers(app):
 
 
 def translate_integrity_error(err: IntegrityError) -> Exception:
-  
+
     orig = getattr(err, "orig", None)
     diag = getattr(orig, "diag", None)
-    constraint = getattr(diag, "constraint_name", None)
-    pgcode = getattr(orig, "pgcode", None)
+    getattr(diag, "constraint_name", None)
+    getattr(orig, "pgcode", None)
     msg = str(orig) if orig else str(err)
- 
 
 
-
-    # Email unique
     if ("UNIQUE constraint failed: users.email" in msg) or \
        ("Duplicate entry" in msg and ("for key 'users.email'" in msg or "for key 'uq_users_email'" in msg)):
-        return ConflictError("Email already in use re papara piasto sto service.")
+        return ConflictError("Email already in use.")
 
 
-    # Foreign key
     if "FOREIGN KEY constraint failed" in msg or "a foreign key constraint fails" in msg:
         return NotFoundError("Related entity not found (foreign key violation).")
-    
-   
-    
-    # --- Fallbacks για SQLite ---
+
+
     if "UNIQUE constraint failed: properties.address, properties.unit_number" in msg:
-     return ConflictError("Property with this address and unit number already exists papara piasto sto serivce.")
-  
+     return ConflictError("A property with this address and unit number already exists.")
+
     if "UNIQUE constraint failed: ownerApplication.owner_id, ownerApplication.property_id" in msg:
-     return ConflictError("ownerapplication with this owner_id and property_id  already exists papara piasto sto serivce.")
+     return ConflictError("You have already applied for this property.")
 
 
-    # Γενικό fallback
     return ConflictError("Integrity constraint violated.")

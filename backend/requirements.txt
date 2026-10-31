@@ -5,3 +5,5 @@ flask-cors
 flask-jwt-extended
 termcolor
 marshmallow
+python-dotenv
+argon2-cffi

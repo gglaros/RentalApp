@@ -1,9 +1,5 @@
-from app.database.models.property import Property
-from app.repositories.properties_repository import PropertiesRepository
 from app.repositories.users_repository import UsersRepository
-from app.common.exceptions import NotFoundError,BadRequestError,ConflictError
-from app.repositories.properties_repository import PropertiesRepository
-from app.database.models.users import Role
+from app.common.exceptions import NotFoundError, ConflictError
 
 
 class UserValidation:
@@ -15,10 +11,9 @@ class UserValidation:
         existing_user = self.users.get_by_email(email)
         if existing_user:
             raise ConflictError(f"Email {email} is already in use from validation.")
-        
-        
+
+
     def _check_user(self,user_id:int) -> None:
      user=self.users.get(user_id)
      if not user:
-        raise NotFoundError(f"Owner not found in validation")
-     
+        raise NotFoundError("Owner not found")

@@ -1,77 +1,100 @@
-# tests/test_properties.py
-from app.database.models.users import User, Role
-from app.database.models.property import Property
-from werkzeug.security import generate_password_hash
-from app.auth.jwt_blocklist_db import create_access_token
-from sqlalchemy.orm import sessionmaker, scoped_session
-import pytest
+from app.tests.helpers import image, uploads
 
-def create_user(session, email, role):
-    user = User(email=email, role=Role[role], password_hash=generate_password_hash("123"))
-    session.add(user)
-    session.commit()
-    return user
 
-def auth_headers(user):
-    token = create_access_token(user)
-    return {"Authorization": f"Bearer {token}"}
+def test_new_property_is_always_pending(users, create_property):
+    prop = create_property(users["h"]["owner"], status="APPROVED")
+    assert prop["status"] == "PENDING"
 
-def test_tenant_cannot_create_property(client, db_session):
-    tenant = create_user(db_session, "tenant1@example.com", "TENANT")
 
-    res = client.post("/api/v1/properties/", json={
-        "address": "123 Fake St",
-        "unit_number": "A",
-        "price": 500,
-        "description": "Nice place",
-        "square_feet": 55,
-        "year_built": 2005,
-        "status": "DRAFT"
-    }, headers=auth_headers(tenant))
+def test_create_with_multiple_images(users, create_property):
+    prop = create_property(users["h"]["owner"], images=3)
+    assert len(prop["images"]) == 3
+    assert all(i["status"] == "PENDING" for i in prop["images"])
+    assert prop["image"] is None
+    assert len(uploads()) == 3
 
-    assert res.status_code == 403
-    assert b"Only owners can perform this action" in res.data
 
-def test_owner_can_create_and_delete_own_property(client, db_session):
-    owner = create_user(db_session, "owner1@example.com", "OWNER")
+def test_invalid_image_type(client, users, create_property):
+    prop = create_property(users["h"]["owner"])
+    r = client.post(f"/api/v1/properties/{prop['id']}/images", data={"images": [image("x.gif")]},
+                    headers=users["h"]["owner"], content_type="multipart/form-data")
+    assert r.status_code == 400
 
-    # Create
-    res = client.post("/api/v1/properties/", json={
-        "address": "456 Real St",
-        "unit_number": "1",
-        "price": 800,
-        "description": "Very nice",
-        "square_feet": 70,
-        "year_built": 2010,
-        "status": "DRAFT"
-    }, headers=auth_headers(owner))
-    assert res.status_code == 201
-    prop_id = res.get_json()["id"]
 
-    # Delete
-    res = client.delete(f"/api/v1/properties/{prop_id}", headers=auth_headers(owner))
-    assert res.status_code == 200 or res.status_code == 202
-    assert b"Property deleted" in res.data
+def test_max_ten_images(client, users, create_property):
+    prop = create_property(users["h"]["owner"], images=8)
+    r = client.post(f"/api/v1/properties/{prop['id']}/images",
+                    data={"images": [image(f"{i}.jpg") for i in range(3)]},
+                    headers=users["h"]["owner"], content_type="multipart/form-data")
+    assert r.status_code == 400
 
-def test_owner_cannot_delete_others_property(client, db_session):
-    owner1 = create_user(db_session, "owner1@example.com", "OWNER")
-    owner2 = create_user(db_session, "owner2@example.com", "OWNER")
 
-    # Owner1 creates property
-    property = Property(
-        address="789 Other St",
-        unit_number="2",
-        price=900,
-        description="Owner1 prop",
-        square_feet=90,
-        year_built=2015,
-        status="DRAFT",
-        owner_id=owner1.id
-    )
-    db_session.add(property)
-    db_session.commit()
+def test_set_cover_and_delete_image(client, users, create_property, approve_images):
+    h = users["h"]["owner"]
+    prop = create_property(h, images=3)
+    ids = [i["id"] for i in prop["images"]]
+    approve_images(users["h"]["admin"])
 
-    # Owner2 tries to delete
-    res = client.delete(f"/api/v1/properties/{property.id}", headers=auth_headers(owner2))
-    assert res.status_code == 400 or res.status_code == 403
-    assert b"do not have permission" in res.data
+    r = client.patch(f"/api/v1/properties/{prop['id']}/images/{ids[2]}/cover", headers=h)
+    assert [i["id"] for i in r.get_json()["images"]] == [ids[2], ids[0], ids[1]]
+
+    r = client.delete(f"/api/v1/properties/{prop['id']}/images/{ids[2]}", headers=h)
+    body = r.get_json()
+    assert [i["id"] for i in body["images"]] == [ids[0], ids[1]]
+    assert body["image"] == body["images"][0]["path"]
+    assert len(uploads()) == 2
+
+
+def test_other_owner_cannot_touch_images(client, users, create_property):
+    prop = create_property(users["h"]["owner"], images=1)
+    r = client.post(f"/api/v1/properties/{prop['id']}/images", data={"images": [image()]},
+                    headers=users["h"]["owner2"], content_type="multipart/form-data")
+    assert r.status_code in (400, 403)
+
+
+def test_update_property(client, users, create_property):
+    prop = create_property(users["h"]["owner"])
+    r = client.put(f"/api/v1/properties/{prop['id']}", json={"price": 900, "status": "APPROVED"},
+                   headers=users["h"]["owner"])
+    assert r.status_code == 200
+    assert r.get_json()["price"] == 900
+    assert r.get_json()["status"] == "PENDING"
+
+
+def test_update_to_duplicate_address_conflicts(client, users, create_property):
+    h = users["h"]["owner"]
+    create_property(h, address="Main 1")
+    other = create_property(h, address="Main 2")
+    r = client.put(f"/api/v1/properties/{other['id']}", json={"address": "Main 1"}, headers=h)
+    assert r.status_code == 409
+
+
+def test_pending_property_visibility(client, users, create_property):
+    prop = create_property(users["h"]["owner"])
+    url = f"/api/v1/properties/{prop['id']}"
+    assert client.get(url, headers=users["h"]["owner"]).status_code == 200
+    assert client.get(url, headers=users["h"]["admin"]).status_code == 200
+    assert client.get(url, headers=users["h"]["owner2"]).status_code == 404
+    assert client.get(url, headers=users["h"]["tenant"]).status_code == 404
+    assert client.get(f"/api/v1/properties/public/{prop['id']}").status_code == 404
+
+
+def test_search(client, users, create_property, approve):
+    h, a = users["h"]["owner"], users["h"]["admin"]
+    cheap = create_property(h, address="Ermou 1", price="500")
+    pricey = create_property(h, address="Stadiou 2", price="1500")
+    approve(cheap["id"], h, a)
+    approve(pricey["id"], h, a)
+
+    ids = lambda r: [p["id"] for p in r.get_json()]
+    assert ids(client.get("/api/v1/properties/approved?q=ermou")) == [cheap["id"]]
+    assert ids(client.get("/api/v1/properties/approved?max_price=1000")) == [cheap["id"]]
+    assert ids(client.get("/api/v1/properties/approved?sort=price_desc")) == [pricey["id"], cheap["id"]]
+    assert client.get("/api/v1/properties/approved?min_price=abc").status_code == 400
+
+
+def test_delete_property_removes_files(client, users, create_property):
+    prop = create_property(users["h"]["owner"], images=2)
+    assert client.delete(f"/api/v1/properties/{prop['id']}", headers=users["h"]["owner2"]).status_code in (400, 403)
+    assert client.delete(f"/api/v1/properties/{prop['id']}", headers=users["h"]["owner"]).status_code == 200
+    assert uploads() == []

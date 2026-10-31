@@ -1,4 +1,3 @@
-# app/api/__init__.py
 from flask import Blueprint
 from app.api.errors import register_error_handlers
 

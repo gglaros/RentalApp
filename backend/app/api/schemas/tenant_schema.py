@@ -8,12 +8,8 @@ class TenantSchema(Schema):
     role = fields.Function(lambda obj: obj.role.value)
     phone = fields.String(required=True, validate=validate.Length(min=10, max=15))
     tenant_applications = fields.List(fields.Nested(TenantApplicationOutSchema))
-   
+
 class TenantMiniSchema(Schema):
     first_name = fields.String(required=True, validate=validate.Length(min=1))
     email = fields.Email(required=True)
     phone = fields.String(required=True, validate=validate.Length(min=10, max=15))
-     
-    
-
-

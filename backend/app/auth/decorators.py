@@ -1,48 +1,62 @@
+import inspect
 from functools import wraps
-from flask import request, jsonify
-from termcolor import colored
+
+from flask import g, request
+
+from app.auth.token import decode_token
+from app.common.exceptions import ForbiddenError, UnauthorizedError
+from app.database.db.session import get_session
+from app.database.models.users import Role, User
 from app.repositories.revoked_tokens_repository import RevokedTokensRepository
 from app.repositories.users_repository import UsersRepository
-from app.database.db.session import get_session, session_scope
-import jwt
-from app.common.exceptions import  ConflictError, BadRequestError,NotFoundError, UnauthorizedError
-from app.auth.token import decode_token
-import logging
-logger = logging.getLogger(__name__)
 
 
-def authenticate(require_user=False):
+def bearer_token() -> str:
+    header = request.headers.get("Authorization", "")
+    if not header.startswith("Bearer "):
+        raise UnauthorizedError("Missing or invalid Authorization header")
+    token = header.split(" ", 1)[1].strip()
+    if not token:
+        raise UnauthorizedError("Missing or invalid Authorization header")
+    return token
+
+
+def _authenticate() -> User:
+    token = bearer_token()
+    session = get_session()
+
+    if RevokedTokensRepository(session).is_revoked(token):
+        raise UnauthorizedError("Token has been revoked")
+
+    payload = decode_token(token)
+    user = UsersRepository(session).get(payload.get("userId"))
+
+    if not user or not user.is_active:
+        raise UnauthorizedError("User no longer exists or is inactive")
+    return user
+
+
+def require_auth(*roles: Role):
+    allowed = {r.value if isinstance(r, Role) else str(r) for r in roles}
+
     def decorator(f):
+        wants_user = "userAuth" in inspect.signature(f).parameters
+
         @wraps(f)
         def wrapper(*args, **kwargs):
-            print('\033[31mHello World but Red!\033[0m')
-           
-            token = request.headers.get("Authorization")
-        
-            if not token:
-             print('\033[31mToken error malaka!\033[0m')
-             return jsonify({"error": "Missing or invalid Authorization header token"}), 401
-             
-            if not token.startswith("Bearer "):
-             print('\033[31mToken has not start bear malaka!\033[0m')       
-             return jsonify({"error": "Missing or invalid Authorization header token"}), 401
-            
-            token=token.split(" ", 1)[1].strip()
-           
-            with session_scope() as s:
-             revoked_repo = RevokedTokensRepository(s)
-             if revoked_repo.is_revoked(token):
-              raise UnauthorizedError("Token has been revoked (logout detected malaka).") 
-            
-            decoded=decode_token(token)
-            id=decoded["userId"]
-            print("!!!!!!!!!!!!!!",id)
-            
-            user = UsersRepository(get_session()).get(id)
-            print("!!!!!!!!!!!!!!",user)
-            if not user:
-                return jsonify({"error": "User not found auth"}), 404
-            
-            return f(*args, userAuth=user, **kwargs)
+            user = _authenticate()
+            if allowed and user.role.value not in allowed:
+                raise ForbiddenError("You do not have permission to perform this action")
+
+            g.current_user = user
+            if wants_user:
+                kwargs["userAuth"] = user
+            return f(*args, **kwargs)
+
         return wrapper
+
     return decorator
+
+
+def current_user() -> User | None:
+    return g.get("current_user")
