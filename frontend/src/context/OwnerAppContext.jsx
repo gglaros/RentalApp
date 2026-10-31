@@ -1,146 +1,86 @@
-import { createContext, useState, useCallback, useContext, use } from "react";
+import { createContext, useState, useCallback, useContext } from "react";
 import UserContext from "../context/UserContext";
-import axios from "axios";
+import { ownerAppsApi, tenantAppsApi } from "../api/applications";
+import { errorMessage } from "../utils/api";
 
 const OwnerAppContext = createContext();
 
 function OwnerAppProvider({ children }) {
-    const { token, fetchProfile } = useContext(UserContext);
-    const [requests, setRequests] = useState([]);
-    const [message, setMessage] = useState("");
- 
-    console.log("good morning ownerAppconte");
-  const makeApp = useCallback(async (propID,token) => {
-   
-    try {
-      const response = await axios.post(`http://127.0.0.1:5000/api/v1/ownerApps/create/${propID}`, 
-      {}, 
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (response.status === 200 || response.status===202 || response.status===201) {
-        console.log(response.data);
-        setMessage("well done.");
-      } else {
-        console.error("Failed to make app",response.status);
-        
-      }
-    } catch (error) {
-     console.log(error.response.data)
-     setMessage("You already made an application for this property.");
-     console.error(error)
-    }
+  const { fetchProfile } = useContext(UserContext);
+  const [requests, setRequests] = useState([]);
+  const [message, setMessage] = useState("");
+
+  const flash = (msg) => {
+    setMessage(msg);
     setTimeout(() => setMessage(""), 4000);
+  };
+
+  const makeApp = useCallback(async (propertyId) => {
+    try {
+      await ownerAppsApi.create(propertyId);
+      flash("Application sent to the admin.");
+    } catch (error) {
+      console.error(error);
+      flash(
+        error?.response?.status === 409
+          ? "You already made an application for this property."
+          : errorMessage(error, "Failed to send application.")
+      );
+    }
   }, []);
 
-
-
-  const getRequests = useCallback(async (token) => {
-     
+  const deleteApp = useCallback(async (appId) => {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/api/v1/owners/requests", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
- 
-      if (response.status === 200 || response.status===202) {
-        console.log(response.data);
-        setRequests(response.data);
-      
-      } else {
-        console.error("Failed to get app");
-      }
+      await ownerAppsApi.remove(appId);
+      flash("Application deleted.");
+    } catch (error) {
+      console.error(error);
+      flash(errorMessage(error, "Failed to delete application."));
+    }
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const getRequests = useCallback(async () => {
+    try {
+      setRequests(await tenantAppsApi.listForOwner());
     } catch (error) {
       console.error("Failed to fetch requests", error);
     }
-     
   }, []);
 
-
-
-
-  const approveApp = useCallback(async (action,app_id,token) => {
+  const changeRequestStatus = useCallback(async (appId, status) => {
     try {
-      console.log(action)
-      const response = await axios.patch(
-        `http://127.0.0.1:5000/api/v1/owners//change/request/status/${app_id}`,
-        action,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.status == 200) {
-        console.log(response.data);
-      }
+      const data = await tenantAppsApi.changeStatus(appId, status);
+      flash(status === "APPROVED" ? "Request approved." : status === "REJECTED" ? "Request rejected." : "Request updated.");
+      return data;
     } catch (error) {
-      console.error("Failed to fetch property", error);
+      console.error(error);
+      flash(errorMessage(error, "Failed to change request status."));
+      return null;
+    } finally {
+      await fetchProfile();
     }
-   
-  }, []);
+  }, [fetchProfile]);
 
-
-
-
-  // this app is owner app for admin to accept the property
-  const deleteApp = useCallback(async (appId,token) => {
-     
+  const deleteRequest = useCallback(async (appId) => {
     try {
-      const response = await axios.delete(`http://127.0.0.1:5000/api/v1/ownerApps/delete/${appId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
- 
-     console.log("i use fetchprofile")
-      if (response.status === 200 || response.status===202) {
-       setMessage("well done.");
-        console.log(response.data);
-      
-      } else {
-        console.error("Failed to delete app");
-      }
+      await tenantAppsApi.removeForOwner(appId);
+      flash("Request deleted.");
     } catch (error) {
-      console.error("Failed to delete app", error);
+      console.error(error);
+      flash(errorMessage(error, "Failed to delete request."));
     }
-     fetchProfile();
-     setTimeout(() => setMessage(""), 4000);
-  }, []);
-
-
-
-  // this is the request who tenant has make to owner to see the property
-  const deleteRequest = useCallback(async (appId,token) => {
-     
-    try {
-      const response = await axios.delete(`http://127.0.0.1:5000/api/v1/owners/delete/request/${appId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
- 
-     console.log("i use fetchprofile")
-      if (response.status === 200 || response.status===202) {
-       setMessage("well done.");
-        console.log(response.data);
-      
-      } else {
-        console.error("Failed to delete app");
-      }
-    } catch (error) {
-      console.error("Failed to delete app", error);
-    }
-     fetchProfile();
-     setTimeout(() => setMessage(""), 4000);
-  }, []);
-  
-  
+    fetchProfile();
+  }, [fetchProfile]);
 
   const valueToShare = {
-   makeApp,
-   deleteApp,
-   getRequests,
-   requests,
-   deleteRequest,
-   message
+    makeApp,
+    deleteApp,
+    getRequests,
+    requests,
+    deleteRequest,
+    changeRequestStatus,
+    message,
   };
 
   return (

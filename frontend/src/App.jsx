@@ -4,9 +4,7 @@ import { PropertyProvider } from "./context/PropertyContext";
 import { OwnerAppProvider } from "./context/OwnerAppContext";
 import { AdminProvider } from "./context/AdminContext";
 import { TenantProvider } from "./context/TenantContext";
-import {AdminRoutes} from "./utils/AdminRoutes";
-import { OwnerRoutes } from "./utils/OwnerRoutes";
-import ReactDOM from "react-dom/client";
+import { RequireAuth, GuestOnly } from "./routes/RequireAuth";
 import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { SignIn } from "./pages/SignIn";
@@ -19,10 +17,11 @@ import { OwnerApps } from "./components/owner/OwnerApps";
 import { TenantApps } from "./components/tenant/TenantApps";
 import { AllOwnerApps } from "./components/admin/AllOwnerApps";
 import {AllUsers} from "./components/admin/AllUsers";
+import { PendingImages } from "./components/admin/PendingImages";
 import { OwnerRequests } from "./components/owner/OwnerRequests";
-import { OwnerProfile } from "./components/profiles/OwnerProfile";
 import { Edit } from "./pages/Edit";
-import { User } from "lucide-react";
+import { EditProperty } from "./pages/EditProperty";
+import { Properties } from "./pages/Properties";
 import { Toaster } from "react-hot-toast";
 
 function App() {
@@ -35,29 +34,41 @@ function App() {
         <BrowserRouter>
           <Layout>
             <Routes>
-              <Route path="" element={<Home />} />
+
+              <Route path="/" element={<Home />} />
               <Route path="/home" element={<Home />} />
-              <Route path="/signin" element={<SignIn />} />
-              <Route path="/login" element={<LogIn />} />
-              <Route path="/logout" element={<Logout />} />
-              <Route path="/profile" element={<Profile />} />
-              
-             <Route element={<OwnerRoutes />}>
-              <Route path="/propertyform" element={<PropertyForm />} />
-              <Route path="/ownerRequests" element={<OwnerRequests/>} />
-             </Route>
-
-              <Route path="/ownerApps" element={<OwnerApps />} />
+              <Route path="/properties" element={<Properties />} />
               <Route path="/property/:id" element={<PropertyDetails />} />
+              <Route path="/logout" element={<Logout />} />
 
-              <Route element={<AdminRoutes />}>
-              <Route path="/AllUsers" element={<AllUsers />} />
-              <Route path="/AllOwnerApps" element={<AllOwnerApps />} />
-             </Route>
+              <Route element={<GuestOnly />}>
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/login" element={<LogIn />} />
+              </Route>
 
-              <Route path="/Edit" element={<Edit/>} />
-              <Route path="/tenantApps" element={<TenantApps/>} />
+              <Route element={<RequireAuth />}>
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/Edit" element={<Edit />} />
+              </Route>
 
+              <Route element={<RequireAuth roles={["OWNER"]} />}>
+                <Route path="/propertyform" element={<PropertyForm />} />
+                <Route path="/property/:id/edit" element={<EditProperty />} />
+                <Route path="/ownerApps" element={<OwnerApps />} />
+                <Route path="/ownerRequests" element={<OwnerRequests />} />
+              </Route>
+
+              <Route element={<RequireAuth roles={["TENANT"]} />}>
+                <Route path="/tenantApps" element={<TenantApps />} />
+              </Route>
+
+              <Route element={<RequireAuth roles={["ADMIN"]} />}>
+                <Route path="/AllUsers" element={<AllUsers />} />
+                <Route path="/AllOwnerApps" element={<AllOwnerApps />} />
+                <Route path="/PendingImages" element={<PendingImages />} />
+              </Route>
+
+              <Route path="*" element={<Home />} />
             </Routes>
           </Layout>
         </BrowserRouter>
@@ -66,12 +77,8 @@ function App() {
         </AdminProvider>
         </OwnerAppProvider>
     </UserProvider>
-
   );
 }
 
 export default App;
-
-
-
 

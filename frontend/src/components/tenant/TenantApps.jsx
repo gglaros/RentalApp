@@ -1,12 +1,24 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import UserContext from "../../context/UserContext";
-import OwnerAppCotext from "../../context/OwnerAppContext";
+import TenantContext from "../../context/TenantContext";
 
 export const TenantApps = () => {
   const { userProfile,fetchProfile } = useContext(UserContext);
-  const { deleteApp, message } = useContext(OwnerAppCotext);
+  const { cancelApp, message } = useContext(TenantContext);
+  const navigate = useNavigate();
 
   const token = sessionStorage.getItem("token");
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const handleCancel = async (app) => {
+    if (!window.confirm(`Cancel your application for ${app.property.address}?`)) return;
+    await cancelApp(app.id, token);
+    fetchProfile();
+  };
 
   const getStatusStyle = (status) => {
     switch (status?.toUpperCase()) {
@@ -48,6 +60,7 @@ export const TenantApps = () => {
                     <th className="px-6 py-4  font-semibold">Description</th>
                     <th className="px-6 py-4  font-semibold">Status</th>
                     <th className="px-6 py-4  font-semibold">Owner Email</th>
+                    <th className="px-6 py-4 text-center font-semibold">Action</th>
                   
                   
                   </tr>
@@ -59,7 +72,10 @@ export const TenantApps = () => {
                       key={app.id || index}
                       className="border-t border-slate-800 hover:bg-slate-800/40 transition-colors"
                     >
-                      <td className="px-6 py-4 font-medium text-slate-100">
+                      <td
+                        className="px-6 py-4 font-medium text-slate-100 cursor-pointer hover:text-violet-300"
+                        onClick={() => app.property.id && navigate(`/property/${app.property.id}`)}
+                      >
                         {app.property.address}
                       </td>
 
@@ -82,18 +98,19 @@ export const TenantApps = () => {
                       </td>
 
                       <td className="px-6 py-4 text-slate-300 break-all">
-                        {app.property.owner.email}
+                        {app.property.owner?.email}
                       </td>
 
-                      {/* <td className="px-6 py-4 text-center">
+                      <td className="px-6 py-4 text-center">
                         <button
                           type="button"
-                          onClick={() => deleteApp(app.id, token)}
-                          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 hover:scale-105 active:scale-95"
+                          onClick={() => handleCancel(app)}
+                          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20"
                         >
-                          Delete
+                          {app.status === "PENDING" ? "Cancel" : "Remove"}
                         </button>
-                      </td> */}
+                      </td>
+
 
                     </tr>
                   ))}

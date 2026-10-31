@@ -14,8 +14,6 @@ export const TenantProfile = () => {
   const token = sessionStorage.getItem("token");
 
  
-
-
   useEffect(() => {
     if (token) {
       fetchApprovedProperties();
@@ -156,17 +154,17 @@ export const TenantProfile = () => {
                           const existingApp =
                             userProfile.tenant_applications?.find(
                               (app) =>
-                                app.property.address === property.address &&
+                                app.property?.id === property.id &&
                                 app.status === "PENDING"
                             );
 
                           return (
                             <button
                               type="button"
-                              onClick={() => {
+                              onClick={async () => {
                                 if (!existingApp) {
-                                  makeApp(property.id, token);
-                                  setRefresh(!refresh);
+                                  await makeApp(property.id, token);
+                                  fetchProfile();
                                 }
                               }}
                               disabled={!!existingApp}

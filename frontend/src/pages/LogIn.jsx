@@ -1,128 +1,32 @@
-// import { useState, useEffect, useCallback, useContext } from "react";
-// import { useNavigate } from "react-router-dom";
-// import UserContext from "../context/UserContext";
-// import axios from "axios"; 
-
-
-// export const LogIn = () => {
-//     const [email, setEmail] = useState("");
-//     const [password,setPassword] = useState("");
-//     const { userProfile, fetchProfile,setToken } = useContext(UserContext);
-//     const navigate = useNavigate();
-
-//     useEffect(() => {
-//       if (userProfile) {
-//         navigate("/profile");
-//       }
-//     }, [userProfile, navigate]);
-
-
-//     const onSumbit = async (e) =>{
-//         e.preventDefault();
-
-//         const response = await axios.post(
-//           "http://127.0.0.1:5000/api/v1/users/login",
-//           {
-//             password: password,
-//             email: email,
-//           },
-//           {
-//             headers: {
-//               "Content-Type": "application/json",
-//             },
-//           }
-//         );
-
-//         if (response.data.token) {
-//             sessionStorage.setItem("token", response.data.token);
-//             setToken(response.data.token)
-//         }
-//     }
-    
-
-//     return (
-//        <div className="container  flex items-center justify-center  h-[600px] bg-background text-foreground ">
-//         <form onSubmit={onSumbit} className="bg-card border p-8 rounded-2xl shadow-lg w-full max-w-sm space-y-6">
-//           <h1 className="text-3xl text-center">Log in</h1>
-
-//           <div className="flex flex-col text-left">
-            
-//             <label>Email</label>
-//             <input type="text"
-//             className="px-3 py-2 rounded-md border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-//             placeholder="email"
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//             ></input>
-//           </div>
-
-
-//           <div className="flex flex-col text-left">
-//             <label className="mb-1">Password</label>
-//             <input type="text"
-//             className="px-3 py-2 rounded-md border bg-background"
-//             placeholder="password"
-//             value={password}
-//             onChange={(e) => setPassword(e.target.value)}
-//             >
-//             </input>
-//           </div>
-
-//          <button type="submit" className="w-full py-2 rounded-md bg-primary hover:opacity-90 transition" >Log in </button>     
-//         </form>
-//        </div>
-
-//     )
-
-//     }
-
-
-
-import { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useContext } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import UserContext from "../context/UserContext";
-import axios from "axios";
 
 export const LogIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const { userProfile, setToken } = useContext(UserContext);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (userProfile) {
-      navigate("/profile");
-    }
-  }, [userProfile, navigate]);
+  const { login } = useContext(UserContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const redirectTo = location.state?.from?.pathname || "/profile";
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
+    setLoading(true);
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:5000/api/v1/users/login",
-        {
-          email,
-          password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.data.token) {
-        sessionStorage.setItem("token", response.data.token);
-        setToken(response.data.token);
-        navigate("/profile");
-      }
-    } catch (err) {
+      await login(email, password);
+      navigate(redirectTo, { replace: true });
+    } catch {
       setError("Invalid email or password");
-      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -174,9 +78,10 @@ export const LogIn = () => {
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-emerald-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400 active:scale-[0.98]"
+              disabled={loading}
+              className="w-full rounded-xl bg-emerald-500 disabled:opacity-50 px-4 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400 active:scale-[0.98]"
             >
-              Log in
+              {loading ? "Logging in..." : "Log in"}
             </button>
           </form>
         </div>

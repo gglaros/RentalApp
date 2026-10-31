@@ -1,61 +1,10 @@
-// import { useParams } from "react-router-dom";
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-
-// export const PropertyDetails = () => {
-//   const { id } = useParams();
-//   const [property, setProperty] = useState(null);
-//   const token = sessionStorage.getItem("token");
-//   useEffect(() => {
-//     const fetchProperty = async () => {
-//       const res = await axios.get(
-//         `http://127.0.0.1:5000/api/v1/properties/${id}`,
-//         {
-//             headers: { Authorization: `Bearer ${token}` },
-//           }
-//       );
-//       setProperty(res.data);
-//       console.log(res.data)
-//     };
-
-//     fetchProperty();
-//   }, [id]);
-
-//   if (!property) return <p className="text-white">Loading...</p>;
-
-//   return (
-//     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-//       <div className="bg-slate-900 p-6 rounded-3xl shadow-xl max-w-lg w-full">
-        
-//         <h1 className="text-3xl mb-4">{property.address}</h1>
-
-//         <div className="h-full bg-slate-800 overflow-hidden relative">
-//                   {property.image ? (
-//                     <img
-//                       src={`http://localhost:5000/${property.image}`}
-//                       alt={property.address}
-//                       className="w-full h-full object-cover" 
-//                     />
-//                   ) : (
-//                     <div className="w-full h-full bg-gradient-to-br from-violet-800 via-indigo-800 to-slate-800" />
-//                   )}
-                 
-//                 </div>
-
-//         <p className="text-slate-300 mb-2">{property.description}</p>
-//         <p>Price: €{property.price}</p>
-//         <p>Square feet: {property.square_feet}</p>
-//         <p>Year built: {property.year_built}</p>
-//       </div>
-//     </div>
-//   );
-// };
-
-
-
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useContext, useEffect, useState } from "react";
+import { propertiesApi } from "./api/properties";
+import { ImageGallery } from "./components/ImageGallery";
+import UserContext from "./context/UserContext";
+import TenantContext from "./context/TenantContext";
+import { getImages } from "./utils/api";
 
 export const PropertyDetails = () => {
   const { id } = useParams();
@@ -65,7 +14,8 @@ export const PropertyDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const token = sessionStorage.getItem("token");
+  const { userProfile, fetchProfile, isAuthenticated } = useContext(UserContext);
+  const { makeApp, message } = useContext(TenantContext);
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -73,14 +23,19 @@ export const PropertyDetails = () => {
         setLoading(true);
         setError("");
 
-        const res = await axios.get(
-          `http://127.0.0.1:5000/api/v1/properties/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
+        let data = null;
+        if (isAuthenticated) {
+          try {
+            data = await propertiesApi.get(id);
+          } catch {
+            data = null;
           }
-        );
+        }
+        if (!data) {
+          data = await propertiesApi.getPublic(id);
+        }
 
-        setProperty(res.data);
+        setProperty(data);
       } catch (err) {
         setError("Failed to load property details");
         console.error(err);
@@ -90,7 +45,57 @@ export const PropertyDetails = () => {
     };
 
     fetchProperty();
-  }, [id, token]);
+  }, [id, isAuthenticated]);
+
+  const renderAction = () => {
+    if (!property || property.status !== "APPROVED") return null;
+
+    if (!userProfile) {
+      return (
+        <button
+          onClick={() => navigate("/login")}
+          className="rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold hover:bg-violet-500"
+        >
+          Log in to apply
+        </button>
+      );
+    }
+
+    if (userProfile.role === "OWNER" && userProfile.id === property.owner?.id) {
+      return (
+        <button
+          onClick={() => navigate(`/property/${property.id}/edit`)}
+          className="rounded-xl border border-violet-500/40 bg-violet-500/15 px-5 py-2.5 text-sm font-semibold text-violet-300 hover:bg-violet-500/25"
+        >
+          Edit property
+        </button>
+      );
+    }
+
+    if (userProfile.role !== "TENANT") return null;
+
+    const existing = userProfile.tenant_applications?.find(
+      (app) => app.property?.id === property.id
+    );
+    if (existing) {
+      return (
+        <span className="rounded-xl border border-slate-700 px-5 py-2.5 text-sm text-slate-300">
+          Your application: <b>{existing.status}</b>
+        </span>
+      );
+    }
+    return (
+      <button
+        onClick={async () => {
+          await makeApp(property.id);
+          fetchProfile();
+        }}
+        className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold hover:bg-emerald-500"
+      >
+        Apply for this property
+      </button>
+    );
+  };
 
   if (loading) {
     return (
@@ -134,35 +139,16 @@ export const PropertyDetails = () => {
 
         <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl backdrop-blur">
           <div className="grid lg:grid-cols-2">
-            <div className="relative min-h-[320px] bg-slate-800">
-              {property.image ? (
-                <img
-                  src={`http://localhost:5000/${property.image}`}
-                  alt={property.address}
-                 className="h-full w-full object-contain"
-                />
-              ) : property.image ? (
-                <img
-                  src={`http://127.0.0.1:5000${property.image}`}
-                  alt={property.address}
-                  className="h-full w-full object-contain"
-                />
-              ) : (
-                <div className="flex h-full  items-center justify-center bg-gradient-to-br from-violet-900 via-indigo-900 to-slate-900">
-                  <span className="text-slate-400 text-lg">No image available</span>
-                </div>
-              )}
-
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                  {property.address}
-                </h1>
-               
-              </div>
+            <div className="relative min-h-[320px] bg-slate-800 flex flex-col">
+              <ImageGallery images={getImages(property)} alt={property.address} />
             </div>
 
             <div className="p-6 md:p-8">
-              <div className="mb-6">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-left mb-4">
+                {property.address}
+              </h1>
+
+              <div className="mb-6 text-left">
                 <span
                   className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
                     property.status?.toUpperCase() === "APPROVED"
@@ -241,8 +227,11 @@ export const PropertyDetails = () => {
             </div>
           </div>
 
-          <div className="border-t border-slate-800 bg-slate-950/40 px-6 py-4">
-           
+          <div className="border-t border-slate-800 bg-slate-950/40 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm text-slate-400">
+              {message}
+            </span>
+            {renderAction()}
           </div>
         </div>
       </div>

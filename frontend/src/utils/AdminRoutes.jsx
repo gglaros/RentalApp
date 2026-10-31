@@ -1,15 +1,3 @@
-import { Outlet, Navigate } from "react-router-dom";
-import {  useContext, use } from "react";
-import UserContext from "../context/UserContext";
+import { RequireAuth } from "../routes/RequireAuth";
 
-export const AdminRoutes = () => {
-  const { userProfile, loading } = useContext(UserContext);
-
-  if (loading) return <div>Loading...</div>;
-
-  if (!userProfile || userProfile.role !== "ADMIN") {
-    return <Navigate to="/home" replace />;
-  }
-
-  return <Outlet />;
-};
+export const AdminRoutes = () => <RequireAuth roles={["ADMIN"]} />;

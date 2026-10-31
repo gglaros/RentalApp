@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import UserContext from "../../context/UserContext";
 import PropertyContext from "../../context/PropertyContext";
 import OwnerAppContext from "../../context/OwnerAppContext";
-
-const API = "http://localhost:5000";
+import { getImages, imageUrl, pendingCount } from "../../utils/api";
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -50,7 +49,6 @@ export const OwnerProfile = () => {
           </div>
         )}
 
-        {/* Profile card */}
         <div className="rounded-2xl border border-white/8 bg-slate-900/60 backdrop-blur p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <Avatar name={userProfile.first_name} />
@@ -89,7 +87,6 @@ export const OwnerProfile = () => {
           </div>
         </div>
 
-        {/* Properties */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">My Properties</h2>
@@ -101,7 +98,6 @@ export const OwnerProfile = () => {
             </button>
           </div>
 
-          {/* Property cards grid */}
           {userProfile.properties?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {userProfile.properties.map((property, index) => (
@@ -109,11 +105,14 @@ export const OwnerProfile = () => {
                   key={property.id || index}
                   className="group rounded-2xl border border-white/8 bg-slate-900/60 overflow-hidden hover:border-violet-500/30 transition-colors"
                 >
-                  {/* Image */}
-                  <div className="relative h-44 bg-slate-800 overflow-hidden">
-                    {property.image ? (
+
+                  <div
+                    className="relative h-44 bg-slate-800 overflow-hidden cursor-pointer"
+                    onClick={() => navigate(`/property/${property.id}`)}
+                  >
+                    {getImages(property).length ? (
                       <img
-                        src={`${API}/${property.image}`}
+                        src={imageUrl(getImages(property)[0].path)}
                         alt={property.address}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -139,9 +138,18 @@ export const OwnerProfile = () => {
                     <div className="absolute top-2 right-2">
                       <StatusBadge status={property.status} />
                     </div>
+                    {pendingCount(property) > 0 && (
+                      <span className="absolute bottom-2 left-2 rounded-full bg-yellow-500/90 px-2 py-0.5 text-xs font-semibold text-black">
+                        {pendingCount(property)} pending review
+                      </span>
+                    )}
+                    {getImages(property).length > 1 && (
+                      <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 text-xs">
+                        📷 {getImages(property).length}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Info */}
                   <div className="p-4 space-y-3">
                     <div>
                       <p className="font-medium text-sm truncate">
@@ -160,14 +168,13 @@ export const OwnerProfile = () => {
                       </span>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex gap-2 pt-1">
                       <button
                         onClick={() => makeApp(property.id, token)}
                         disabled={property.status === "APPROVED"}
                         className={`flex-1 py-1.5 rounded-lg border text-xs font-medium transition-colors
     ${
-      property.status === "APPROVED" 
+      property.status === "APPROVED"
         ? "border-slate-700 bg-slate-800 text-slate-500 cursor-not-allowed"
         : "border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 cursor-pointer"
     }`}
@@ -176,7 +183,17 @@ export const OwnerProfile = () => {
                       </button>
 
                       <button
-                        onClick={() => deleteProperty(property.id, token)}
+                        onClick={() => navigate(`/property/${property.id}/edit`)}
+                        className="flex-1 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 text-xs font-medium transition-colors"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete ${property.address}? This also deletes its photos.`))
+                            deleteProperty(property.id, token);
+                        }}
                         className="flex-1 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium transition-colors"
                       >
                         Delete

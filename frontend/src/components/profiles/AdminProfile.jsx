@@ -95,6 +95,14 @@ export const AdminProfile = () => {
 
             <button
               type="button"
+              onClick={() => navigate("/PendingImages")}
+              className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-5 py-3 text-sm font-medium text-yellow-400 transition-all hover:bg-yellow-500/20 hover:scale-105 active:scale-95"
+            >
+              Review Photos
+            </button>
+
+            <button
+              type="button"
               onClick={() => navigate("/Edit")}
               className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-sm font-medium text-blue-400 transition-all hover:bg-blue-500/20 hover:scale-105 active:scale-95"
             >

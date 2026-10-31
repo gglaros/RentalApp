@@ -1,125 +1,58 @@
-import { createContext, useState, useCallback, useContext, use } from "react";
-import axios from "axios";
+import { createContext, useState, useCallback } from "react";
+import { adminApi } from "../api/admin";
 
 const AdminContext = createContext();
 
 function AdminProvider({ children }) {
+  const [apps, setApps] = useState([]);
+  const [users, setUsers] = useState([]);
 
-  const [apps,setApps] = useState([]);
-  const [users,setUsers] = useState([]);
-  console.log("good morning Admin");
-  const getAllApps = useCallback(async (token) => {
+  const getAllApps = useCallback(async () => {
     try {
-      const response = await axios.get(
-        " http://127.0.0.1:5000/api/v1/admin/all/ownerApps",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status == 200) {
-        console.log(response.data);
-        setApps(response.data);
-       
-      }
+      setApps(await adminApi.listOwnerApps());
     } catch (error) {
-      console.error("Failed to fetch property", error);
+      console.error("Failed to fetch owner applications", error);
     }
-   
-  }, []);
-      
-
-
-  const getAllUsers = useCallback(async (token) => {
-    console.log("good morning admincontext users");
-    try {
-      const response = await axios.get(
-        " http://127.0.0.1:5000/api/v1/admin/users",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status == 200) {
-        console.log(response.data);
-        setUsers(response.data);
-       
-      }
-    } catch (error) {
-      console.error("Failed to fetch property", error);
-    }
-   
   }, []);
 
-
-
-
-  const approveApp = useCallback(async (action,app_id,token) => {
+  const getAllUsers = useCallback(async () => {
     try {
-      console.log(action)
-      const response = await axios.patch(
-        `http://127.0.0.1:5000/api/v1/admin/change/status/${app_id}`,
-        action,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.status == 200) {
-        console.log(response.data);
-      }
+      setUsers(await adminApi.listUsers());
     } catch (error) {
-      console.error("Failed to fetch property", error);
+      console.error("Failed to fetch users", error);
     }
-   
   }, []);
 
-
-
-
-  const deleteUser = useCallback(async (user_id,token) => {
-     
+  const approveApp = useCallback(async (action, appId) => {
     try {
-      const response = await axios.delete(`http://127.0.0.1:5000/api/v1/admin/user/delete/${user_id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
- 
-      if (response.status === 200 || response.status===202) {
-        console.log(response.data);
-      
-      } else {
-        console.error("Failed to delete user");
-      }
+      await adminApi.changeOwnerAppStatus(appId, action.status);
+    } catch (error) {
+      console.error("Failed to change application status", error);
+    }
+  }, []);
+
+  const deleteUser = useCallback(async (userId) => {
+    try {
+      await adminApi.deleteUser(userId);
     } catch (error) {
       console.error("Failed to delete user", error);
     }
   }, []);
 
-
-
-const valueToShare = {
-  getAllApps,
-  getAllUsers,
-  approveApp,
-  deleteUser,
-  apps,
-  users
-};
-
-
+  const valueToShare = {
+    getAllApps,
+    getAllUsers,
+    approveApp,
+    deleteUser,
+    apps,
+    users,
+  };
 
   return (
     <AdminContext.Provider value={valueToShare}>
       {children}
     </AdminContext.Provider>
   );
-
 }
 export { AdminProvider };
 export default AdminContext;

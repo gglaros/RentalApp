@@ -1,58 +1,56 @@
-import { createContext, useState, useCallback, useContext, use } from "react";
-import axios from "axios";
+import { createContext, useState, useCallback } from "react";
+import { tenantAppsApi } from "../api/applications";
+import { errorMessage } from "../utils/api";
 
 const TenantContext = createContext();
 
 function TenantProvider({ children }) {
-console.log("good morning tenantcontext");
   const [message, setMessage] = useState("");
 
-    const makeApp = useCallback(async (prop_id,token) => {
-        try {
-          const response = await axios.post(
-            `http://127.0.0.1:5000/api/v1/tenants/create/app/prop/${prop_id}`,
-            {}, 
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (response.status == 201) {
-         
-          }
-        } catch (error) {
-          console.log(error.response.data)
-          setMessage("You already made an application for this property.");
-          console.error(error)
-        }
-        setTimeout(() => setMessage(""), 4000);
-      }, []);
+  const flash = (msg) => {
+    setMessage(msg);
+    setTimeout(() => setMessage(""), 4000);
+  };
 
+  const makeApp = useCallback(async (propertyId) => {
+    try {
+      await tenantAppsApi.apply(propertyId);
+      flash("Application sent to the owner.");
+      return true;
+    } catch (error) {
+      console.error(error);
+      flash(
+        error?.response?.status === 409
+          ? "You already made an application for this property."
+          : errorMessage(error, "Failed to send application.")
+      );
+      return false;
+    }
+  }, []);
 
+  const cancelApp = useCallback(async (appId) => {
+    try {
+      await tenantAppsApi.cancel(appId);
+      flash("Application cancelled.");
+      return true;
+    } catch (error) {
+      console.error(error);
+      flash(errorMessage(error, "Failed to cancel application."));
+      return false;
+    }
+  }, []);
 
-
-
-
-
-
-
-
-const valueToShare = {
+  const valueToShare = {
     makeApp,
-    message
-
-};
-
-
+    cancelApp,
+    message,
+  };
 
   return (
     <TenantContext.Provider value={valueToShare}>
       {children}
     </TenantContext.Provider>
   );
-
 }
 export { TenantProvider };
 export default TenantContext;
